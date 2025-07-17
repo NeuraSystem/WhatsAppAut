@@ -1,6 +1,7 @@
 // src/services/guardrails.js
 
 const logger = require('../utils/logger');
+const config = require('../utils/config'); // Importar la configuración centralizada
 
 /**
  * Clase Guardrails para filtrar y validar las respuestas del agente.
@@ -8,6 +9,7 @@ const logger = require('../utils/logger');
  */
 class Guardrails {
     constructor() {
+        // Las reglas ahora usan la configuración externa
         this.rules = [
             this.checkNoPromises.bind(this),
             this.checkNoToxicity.bind(this),
@@ -16,7 +18,7 @@ class Guardrails {
             this.checkNoSensitiveInfoRequest.bind(this),
             this.checkResponseLength.bind(this),
         ];
-        logger.info('🛡️ Guardrails inicializados con reglas de validación.');
+        logger.info('🛡️ Guardrails inicializados con reglas de validación desde la configuración central.');
     }
 
     /**
@@ -33,7 +35,7 @@ class Guardrails {
             const result = rule(filteredResponse, userQuery);
             if (result.violation) {
                 violations.push(result.message);
-                // Si es una violación crítica, podemos devolver un fallback inmediato
+                // Si es una violación crítica, devolvemos un fallback inmediato
                 if (result.critical) {
                     logger.warn(`CRITICAL GUARDRAIL VIOLATION: ${result.message} for query: "${userQuery}"`);
                     return "Disculpa, no puedo responder a eso. Por favor, intenta con otra pregunta.";
@@ -55,8 +57,7 @@ class Guardrails {
      * @returns {{violation: boolean, message: string, critical: boolean}}
      */
     checkNoPromises(response) {
-        const promiseKeywords = [/te aseguro/i, /garantizado/i, /sin falta/i, /definitivamente/i];
-        if (promiseKeywords.some(keyword => keyword.test(response))) {
+        if (config.guardrails.noPromises.some(keyword => keyword.test(response))) {
             return { violation: true, message: 'Respuesta contiene promesas no garantizadas.', critical: false };
         }
         return { violation: false };
@@ -68,8 +69,7 @@ class Guardrails {
      * @returns {{violation: boolean, message: string, critical: boolean}}
      */
     checkNoToxicity(response) {
-        const toxicKeywords = [/idiota/i, /estúpido/i, /maldito/i, /grosero/i, /ofensivo/i]; // Ejemplos, expandir con un modelo de toxicidad real
-        if (toxicKeywords.some(keyword => keyword.test(response))) {
+        if (config.guardrails.noToxicity.some(keyword => keyword.test(response))) {
             return { violation: true, message: 'Respuesta contiene lenguaje tóxico.', critical: true };
         }
         return { violation: false };
@@ -82,15 +82,11 @@ class Guardrails {
      * @returns {{violation: boolean, message: string, critical: boolean}}
      */
     checkNoOffTopic(response, userQuery) {
-        // Esta regla es más compleja y podría requerir un LLM para clasificar el tema
-        // Por ahora, una implementación simple podría ser:
-        const businessKeywords = [/celular/i, /reparación/i, /pantalla/i, /batería/i, /precio/i, /garantía/i];
-        const offTopicKeywords = [/clima/i, /noticias/i, /recetas/i, /chistes/i];
+        // Lógica simple mejorada para detectar si el tema es de negocio o no
+        const isBusinessRelated = config.guardrails.businessKeywords.some(keyword => keyword.test(response) || keyword.test(userQuery));
+        const isClearlyOffTopic = config.guardrails.offTopicKeywords.some(keyword => keyword.test(response));
 
-        const isBusinessRelated = businessKeywords.some(keyword => keyword.test(response) || keyword.test(userQuery));
-        const isOffTopic = offTopicKeywords.some(keyword => keyword.test(response));
-
-        if (!isBusinessRelated && isOffTopic) {
+        if (isClearlyOffTopic && !isBusinessRelated) {
             return { violation: true, message: 'Respuesta fuera de tema.', critical: false };
         }
         return { violation: false };
@@ -102,8 +98,7 @@ class Guardrails {
      * @returns {{violation: boolean, message: string, critical: boolean}}
      */
     checkNoPersonalOpinions(response) {
-        const opinionKeywords = [/creo que/i, /en mi opinión/i, /me parece que/i, /a mí me gusta/i];
-        if (opinionKeywords.some(keyword => keyword.test(response))) {
+        if (config.guardrails.noPersonalOpinions.some(keyword => keyword.test(response))) {
             return { violation: true, message: 'Respuesta contiene opinión personal.', critical: false };
         }
         return { violation: false };
@@ -115,8 +110,7 @@ class Guardrails {
      * @returns {{violation: boolean, message: string, critical: boolean}}
      */
     checkNoSensitiveInfoRequest(response) {
-        const sensitiveKeywords = [/contraseña/i, /tarjeta de crédito/i, /número de cuenta/i, /cvv/i, /pin/i];
-        if (sensitiveKeywords.some(keyword => keyword.test(response))) {
+        if (config.guardrails.noSensitiveInfoRequest.some(keyword => keyword.test(response))) {
             return { violation: true, message: 'Respuesta solicita información sensible.', critical: true };
         }
         return { violation: false };
@@ -128,7 +122,7 @@ class Guardrails {
      * @returns {{violation: boolean, message: string, critical: boolean}}
      */
     checkResponseLength(response) {
-        const maxLength = 500; // Caracteres
+        const maxLength = config.guardrails.maxLength;
         if (response.length > maxLength) {
             return { violation: true, message: `Respuesta excede la longitud máxima de ${maxLength} caracteres.`, critical: false };
         }

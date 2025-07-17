@@ -1,6 +1,12 @@
-// src/utils/logger.js - Sistema de logging
-
 const winston = require('winston');
+const fs = require('fs');
+const path = require('path');
+
+// Crear directorio de logs si no existe
+const logsDir = path.join(__dirname, '../../logs');
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+}
 
 // Configurar formato de logs
 const logFormat = winston.format.combine(
@@ -16,61 +22,40 @@ const logFormat = winston.format.combine(
     })
 );
 
-// Configurar transports basados en entorno
-const getTransports = () => {
-    const transports = [
+// Configurar transports
+const transports = [
+    new winston.transports.Console({
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple()
+        ),
+        handleExceptions: true
+    })
+];
+
+// Agregar archivos de log solo si el directorio existe
+try {
+    transports.push(
         new winston.transports.File({ 
-            filename: 'logs/error.log', 
+            filename: path.join(logsDir, 'error.log'), 
             level: 'error',
             handleExceptions: true
+        }),
+        new winston.transports.File({ 
+            filename: path.join(logsDir, 'combined.log'),
+            handleExceptions: true
         })
-    ];
-
-    // En desarrollo, log más verboso
-    if (process.env.NODE_ENV === 'development') {
-        transports.push(
-            new winston.transports.File({ 
-                filename: 'logs/combined.log',
-                handleExceptions: true
-            })
-        );
-    }
-
-    // Console logging condicional
-    const logLevel = process.env.LOG_LEVEL || 'info';
-    if (logLevel === 'debug' || process.env.NODE_ENV === 'development') {
-        transports.push(
-            new winston.transports.Console({
-                format: winston.format.combine(
-                    winston.format.colorize(),
-                    winston.format.simple()
-                ),
-                handleExceptions: true
-            })
-        );
-    } else {
-        // Logging mínimo en producción
-        transports.push(
-            new winston.transports.Console({
-                level: 'warn',
-                format: winston.format.combine(
-                    winston.format.colorize(),
-                    winston.format.simple()
-                ),
-                handleExceptions: true
-            })
-        );
-    }
-
-    return transports;
-};
+    );
+} catch (error) {
+    console.warn('No se pudieron crear archivos de log, usando solo console');
+}
 
 // Crear logger
 const logger = winston.createLogger({
     level: process.env.LOG_LEVEL || 'info',
     format: logFormat,
     defaultMeta: { service: 'salvacell-bot' },
-    transports: getTransports(),
+    transports: transports,
     exitOnError: false
 });
 
@@ -81,11 +66,5 @@ logger.logStartup = (systemStatus) => {
     logger.info('🎭 Sofía AI Lista - Agent Executor Operacional');
     logger.info('✅ WhatsApp Bot CONECTADO - Listo para Producción');
 };
-
-// Crear directorio de logs si no existe
-const fs = require('fs');
-if (!fs.existsSync('logs')) {
-    fs.mkdirSync('logs');
-}
 
 module.exports = logger;

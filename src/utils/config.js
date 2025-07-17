@@ -49,6 +49,27 @@ const config = {
         ollamaBaseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
         ollamaAgentModel: process.env.OLLAMA_AGENT_MODEL || "qwen2.5:1.5b-instruct-q4_0",
     },
+
+    // Configuración de Guardrails
+    guardrails: {
+        maxLength: parseInt(process.env.GUARDRAILS_MAX_LENGTH, 10) || 500,
+        noPromises: [/te aseguro/i, /garantizado/i, /sin falta/i, /definitivamente/i],
+        noToxicity: [/idiota/i, /estúpido/i, /maldito/i, /grosero/i, /ofensivo/i],
+        businessKeywords: [/celular/i, /reparación/i, /pantalla/i, /batería/i, /precio/i, /garantía/i, /tienda/i, /horario/i],
+        offTopicKeywords: [/clima/i, /noticias/i, /recetas/i, /chistes/i, /política/i, /religión/i],
+        noPersonalOpinions: [/creo que/i, /en mi opinión/i, /me parece que/i, /a mí me gusta/i],
+        noSensitiveInfoRequest: [/contraseña/i, /tarjeta de crédito/i, /número de cuenta/i, /cvv/i, /pin/i],
+    },
+
+    // Configuración de PriceExtractionSystem
+    priceExtraction: {
+        fuzzyMatchConfidence: parseFloat(process.env.PRICE_EXTRACTION_FUZZY_CONFIDENCE) || 0.5,
+        fuzzyFallbackConfidence: parseFloat(process.env.PRICE_EXTRACTION_FUZZY_FALLBACK_CONFIDENCE) || 0.7,
+        fallbackSearchConfidence: parseFloat(process.env.PRICE_EXTRACTION_FALLBACK_CONFIDENCE) || 0.4,
+        minPriceValidation: parseInt(process.env.PRICE_EXTRACTION_MIN_PRICE, 10) || 100,
+        maxPriceValidation: parseInt(process.env.PRICE_EXTRACTION_MAX_PRICE, 10) || 10000,
+        minConfidenceValidation: parseFloat(process.env.PRICE_EXTRACTION_MIN_CONFIDENCE) || 0.3,
+    }
 };
 
 const validateConfig = () => {
@@ -66,7 +87,6 @@ const validateConfig = () => {
         process.exit(1);
     }
 
-    // Validar que los números de administrador no estén vacíos
     if (config.initialAdmins.length === 0) {
         logger.warn('No se han configurado números de administrador en ADMIN_NUMBERS. El modo de administración no estará disponible.');
     }

@@ -35,7 +35,14 @@ class SalvaCellPureOrchestrator {
     async initialize() {
         try {
             logger.info('🗄️ Inicializando base de datos...');
-            await initializeDatabase();
+            try {
+                await initializeDatabase();
+                logger.info('✅ Base de datos inicializada correctamente');
+            } catch (dbError) {
+                logger.error('❌ Error con la base de datos, continuando sin ella:', dbError.message);
+                // Continuar sin base de datos
+            }
+            
             await this.initializePureOrchestrator();
             await this.initializeWhatsAppClient();
             this.setupEventHandlers();

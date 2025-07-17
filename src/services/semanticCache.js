@@ -1,12 +1,11 @@
-// src/services/semanticCache.js
-
 const { ChromaClient } = require('chromadb');
-const { embeddingEngine } = require('./embeddingEngine');
+const { getEmbeddingEngine } = require('./embeddingEngine'); // Importar la función asíncrona
 const logger = require('../utils/logger');
+const retryHandler = require('../utils/retryHandler'); // Importar el handler de reintentos
 
 const CHROMA_URL = process.env.CHROMA_URL || 'http://localhost:8000';
 const CACHE_COLLECTION_NAME = 'cache_semantico';
-const SIMILARITY_THRESHOLD = process.env.SEMANTIC_CACHE_THRESHOLD || 0.95; // Umbral de similitud muy alto
+const SIMILARITY_THRESHOLD = parseFloat(process.env.SEMANTIC_CACHE_THRESHOLD) || 0.85; // Umbral de similitud más flexible por defecto
 
 const client = new ChromaClient({ path: CHROMA_URL });
 let cacheCollection;
@@ -20,52 +19,45 @@ class LangChainEmbeddingAdapter {
     }
     
     async generate(texts) {
-        try {
+        return retryHandler(async () => {
             if (Array.isArray(texts)) {
                 return await this.langchainEmbeddings.embedDocuments(texts);
             } else {
                 return [await this.langchainEmbeddings.embedQuery(texts)];
             }
-        } catch (error) {
-            logger.error('Error en LangChainEmbeddingAdapter (SemanticCache):', error);
-            throw error;
-        }
+        }, 5, 1000); // Reintentos para la generación de embeddings
     }
 }
 
-// Crear el adapter para ChromaDB
-const embeddingAdapter = new LangChainEmbeddingAdapter(embeddingEngine);
+let embeddingAdapterInstance = null; // Instancia del adapter para el caché
 
 /**
- * Inicializa la colección de caché semántico.
+ * Inicializa la colección de caché semántico, usando getOrCreateCollection para persistencia.
  */
 async function initializeCache() {
     try {
-        // PRIMERO: Intentar eliminar la colección rota
-        try {
-            await client.deleteCollection({ name: CACHE_COLLECTION_NAME });
-            logger.info("Colección de caché rota eliminada");
-        } catch (deleteError) {
-            logger.info("No había colección de caché previa o ya estaba eliminada");
+        // Asegurarse de que el motor de embeddings esté inicializado
+        const embeddingEngine = await getEmbeddingEngine();
+        if (!embeddingEngine) {
+            throw new Error("El motor de embeddings no pudo ser inicializado.");
         }
-        
-        // SEGUNDO: Crear nueva con adapter correcto
-        cacheCollection = await client.getOrCreateCollection({ 
-            name: CACHE_COLLECTION_NAME,
-            embeddingFunction: embeddingAdapter 
-        });
-        logger.info("Caché semántico inicializado CORRECTAMENTE con adapter compatible.");
+
+        embeddingAdapterInstance = new LangChainEmbeddingAdapter(embeddingEngine);
+
+        cacheCollection = await retryHandler(async () => {
+            return await client.getOrCreateCollection({ 
+                name: CACHE_COLLECTION_NAME,
+                embeddingFunction: embeddingAdapterInstance 
+            });
+        }, 5, 2000); // 5 reintentos, 2 segundos de delay inicial
+
+        logger.info("Caché semántico inicializado o recuperado CORRECTAMENTE.");
     } catch (error) {
-        logger.error("Error al inicializar el caché semántico:", error);
+        logger.error("Error crítico al inicializar el caché semántico después de varios reintentos:", error);
         cacheCollection = null;
+        throw error; // Re-lanza el error
     }
 }
-
-/**
- * Busca una respuesta en el caché semántico.
- * @param {string} userQuery - La consulta del usuario.
- * @returns {Promise<string|null>} La respuesta cacheada si se encuentra, o null.
- */
 
 /**
  * Busca una respuesta en el caché semántico, considerando coherencia y frescura.
@@ -80,9 +72,10 @@ async function findInCache(userQuery, options = {}) {
     }
 
     const minCoherence = options.minCoherence || 0.8;
-    const maxAgeMs = options.maxAgeMs || 1000 * 60 * 60 * 24 * 2; // 2 días por defecto
+    const maxAgeMs = options.maxAgeMs || 1000 * 60 * 60 * 24 * 7; // 7 días por defecto
 
     try {
+        const embeddingEngine = await getEmbeddingEngine();
         const queryEmbedding = await embeddingEngine.embedQuery(userQuery);
 
         // --- VALIDACIÓN DEL EMBEDDING ---
@@ -91,22 +84,25 @@ async function findInCache(userQuery, options = {}) {
             return null;
         }
 
-        const results = await cacheCollection.query({
-            queryEmbeddings: [queryEmbedding],
-            nResults: 1,
-            include: ["metadatas", "documents"]
-        });
+        const results = await retryHandler(async () => {
+            return await cacheCollection.query({
+                queryEmbeddings: [queryEmbedding],
+                nResults: 1,
+                include: ["metadatas", "documents"]
+            });
+        }, 3, 500); // Reintentos para la consulta a ChromaDB
 
         if (results.distances && results.distances.length > 0 && results.distances[0].length > 0) {
             const similarity = 1 - results.distances[0][0];
             const meta = results.metadatas[0][0] || {};
             const coherence = meta.coherenceScore || 1;
-            const timestamp = meta.timestamp || Date.now();
+            const timestamp = meta.timestamp || 0; // Si no hay timestamp, asume muy viejo
             const age = Date.now() - timestamp;
+
             if (
                 similarity >= SIMILARITY_THRESHOLD &&
                 coherence >= minCoherence &&
-                age <= maxAgeMs
+                (timestamp === 0 || age <= maxAgeMs) // Considera entradas sin timestamp como siempre válidas si no se define edad máxima
             ) {
                 const cachedResponse = results.documents[0][0];
                 logger.info(`HIT de caché semántico (similitud ${similarity.toFixed(4)}, coherencia ${coherence}, edad ${Math.round(age/1000)}s) para: "${userQuery}"`);
@@ -123,15 +119,9 @@ async function findInCache(userQuery, options = {}) {
         return null;
     } catch (error) {
         logger.error("Error al buscar en el caché semántico:", error);
-        return null;
+        return null; // Devuelve null en caso de error para no romper el flujo
     }
 }
-
-/**
- * Añade una nueva entrada al caché semántico.
- * @param {string} userQuery - La consulta original del usuario.
- * @param {string} agentResponse - La respuesta generada por el agente.
- */
 
 /**
  * Añade una nueva entrada al caché semántico, con metadatos de coherencia y temporalidad.
@@ -145,6 +135,7 @@ async function addToCache(userQuery, agentResponse, meta = {}) {
         return;
     }
     try {
+        const embeddingEngine = await getEmbeddingEngine();
         const queryEmbedding = await embeddingEngine.embedQuery(userQuery);
         const id = `cache_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const metadatos = {
@@ -153,12 +144,14 @@ async function addToCache(userQuery, agentResponse, meta = {}) {
             coherenceScore: meta.coherenceScore || 1,
             ...meta
         };
-        await cacheCollection.add({
-            ids: [id],
-            embeddings: [queryEmbedding],
-            documents: [agentResponse],
-            metadatas: [metadatos],
-        });
+        await retryHandler(async () => {
+            await cacheCollection.add({
+                ids: [id],
+                embeddings: [queryEmbedding],
+                documents: [agentResponse],
+                metadatas: [metadatos],
+            });
+        }, 3, 500); // Reintentos para añadir a ChromaDB
         logger.info(`Nueva entrada añadida al caché semántico para la consulta: "${userQuery}" (coherencia: ${metadatos.coherenceScore})`);
     } catch (error) {
         logger.error("Error al añadir al caché semántico:", error);
@@ -174,31 +167,51 @@ async function invalidateCache(options = {}) {
     const minCoherence = options.minCoherence || 0.7;
     const maxAgeMs = options.maxAgeMs || 1000 * 60 * 60 * 24 * 3; // 3 días
     try {
-        const all = await cacheCollection.get();
+        // Se necesita una forma de paginar si hay muchas entradas, o un get más específico
+        // Por simplicidad, obtenemos todo para la demostración, pero esto podría ser ineficiente
+        const all = await retryHandler(async () => {
+            return await cacheCollection.get({ 
+                include: ["metadatas"] 
+            });
+        }, 3, 500); // Reintentos para obtener datos del caché
+        
         const idsToDelete = [];
-        for (let i = 0; i < all.ids.length; i++) {
-            const meta = all.metadatas[i];
-            const coherence = meta.coherenceScore || 1;
-            const timestamp = meta.timestamp || Date.now();
-            const age = Date.now() - timestamp;
-            if (coherence < minCoherence || age > maxAgeMs) {
-                idsToDelete.push(all.ids[i]);
+        if (all && all.ids && all.ids.length > 0) {
+            for (let i = 0; i < all.ids.length; i++) {
+                const meta = all.metadatas[i];
+                const coherence = meta.coherenceScore || 1;
+                const timestamp = meta.timestamp || 0;
+                const age = Date.now() - timestamp;
+                
+                if (coherence < minCoherence || (timestamp !== 0 && age > maxAgeMs)) {
+                    idsToDelete.push(all.ids[i]);
+                }
             }
         }
+
         if (idsToDelete.length > 0) {
-            await cacheCollection.delete({ ids: idsToDelete });
+            await retryHandler(async () => {
+                await cacheCollection.delete({ ids: idsToDelete });
+            }, 3, 500); // Reintentos para eliminar de ChromaDB
             logger.info(`Entradas inválidas eliminadas del caché: ${idsToDelete.length}`);
+        } else {
+            logger.info("No se encontraron entradas inválidas en el caché para eliminar.");
         }
     } catch (error) {
         logger.error('Error al invalidar el caché semántico:', error);
     }
 }
 
-// Inicializar el caché al cargar el módulo
-initializeCache();
+// Inicializar el caché al cargar el módulo, manejando errores críticos
+initializeCache().catch(err => {
+    logger.error("Fallo la inicialización del caché semántico de manera crítica.", err);
+    // Dependiendo de la lógica de la aplicación, aquí podrías querer salir del proceso
+    // o deshabilitar funcionalidades que dependen del caché.
+});
 
 module.exports = {
     findInCache,
     addToCache,
-    invalidateCache
+    invalidateCache,
+    initializeCache // Exportar para permitir inicialización explícita si es necesario
 };

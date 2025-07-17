@@ -32,7 +32,8 @@
     "health-check": "node src/scripts/architectural_health_check.js",
     "resilience-test": "node src/scripts/test_resilience_manager.js",
     "cross-validation-test": "node src/scripts/test_cross_source_validator.js",
-    "performance-benchmark": "node src/scripts/benchmark_performance_monitor.js"
+    "performance-benchmark": "node src/scripts/benchmark_performance_monitor.js",
+    "migrate": "node-pg-migrate"
   },
   "keywords": [
     "whatsapp",
@@ -51,9 +52,9 @@
   "author": "SalvaCell",
   "dependencies": {
     "@langchain/anthropic": "^0.3.24",
-    "@langchain/community": "^0.2.11",
-    "@langchain/core": "^0.2.11",
-    "@langchain/openai": "^0.2.1",
+    "@langchain/community": "^0.3.49",
+    "@langchain/core": "^0.3.64",
+    "@langchain/openai": "^0.6.1",
     "@langchain/textsplitters": "^0.1.0",
     "axios": "^1.10.0",
     "chromadb": "^3.0.9",
@@ -63,11 +64,12 @@
     "express": "^5.1.0",
     "fuse.js": "^7.1.0",
     "helmet": "^8.1.0",
-    "langchain": "^0.2.11",
+    "langchain": "^0.3.30",
     "lru-cache": "^11.1.0",
     "markdown-it": "^14.1.0",
     "natural": "^8.1.0",
     "node-cron": "^4.2.1",
+    "node-pg-migrate": "^8.0.3",
     "opossum": "^9.0.0",
     "performance-now": "^2.1.0",
     "pg": "^8.16.3",
