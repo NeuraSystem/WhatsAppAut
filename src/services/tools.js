@@ -2,9 +2,9 @@
 
 const { DynamicTool } = require("langchain/tools");
 const { ChromaClient } = require('chromadb');
-const { embeddingEngine, getEmbedding } = require('./embeddingEngine');
+const { initializeEmbeddingEngine } = require('./embeddingEngine');
 const { pool } = require('../database/pg');
-const { priceExtractionSystem } = require('./priceExtractionSystem');
+const { PriceExtractionSystem } = require('./priceExtractionSystem');
 const { conversationMemory } = require('./conversationMemory');
 const { DeterministicSearchEngine } = require('./deterministicSearchEngine');
 const { DynamicLimitOptimizer } = require('./dynamicLimitOptimizer');
@@ -490,6 +490,7 @@ const knowledgeSearchTool = new DynamicTool({
         return await performanceMonitor.measureAsync('consultar_conocimiento_avanzado', async () => {
             logger.info(`🚀 Consultando conocimiento avanzado para: "${query}"`);
             
+            const embeddingEngine = await initializeEmbeddingEngine();
             // Verificar que embeddingEngine esté disponible
             if (!embeddingEngine) {
                 logger.error("Motor de embeddings no está disponible");
@@ -724,66 +725,6 @@ const escalateToHumanTool = new DynamicTool({
 });
 
 /**
- * Herramienta ROBUSTA para consulta de precios específicos
- * Usa múltiples estrategias para garantizar precisión
- */
-const preciseSearchTool = new DynamicTool({
-    name: "consultar_precio_preciso",
-    description: "Herramienta ESPECIALIZADA para consultas de precios. Usa múltiples estrategias (búsqueda exacta, difusa) para encontrar precios precisos. Úsala SIEMPRE que el cliente pregunte por precios específicos de dispositivos. Entrada: descripción completa de lo que busca el cliente.",
-    func: async (query) => {
-        const schema = {
-            required: ['dispositivo'],
-            optional: ['servicio'],
-            types: {
-                dispositivo: 'string',
-                servicio: 'string'
-            }
-        };
-        const args = { dispositivo: query, servicio: 'pantalla' }; // Asumimos pantalla por defecto si no se especifica
-        const validation = validateArguments('consultar_precio_preciso', args, schema);
-        if (!validation.isValid) {
-            return `Error de argumentos: ${validation.errors.join(', ')}`;
-        }
-
-        const result = await performanceMonitor.measureAsync('consultar_precio_preciso', async () => {
-            logger.info(`🎯 CONSULTA DE PRECIO PRECISO: "${query}"`);
-            return await priceExtractionSystem.extractPrice(query);
-        }, { query });
-
-        if (!result || !result.price) {
-            logger.warn(`❌ No se encontró precio para: "${query}"`);
-            return "No se encontró información de precio específica para ese dispositivo. ¿Podrías proporcionarme más detalles sobre el modelo exacto?";
-        }
-
-        // Formatear respuesta según nivel de confianza
-        let response = "";
-
-        if (result.confidence >= 0.8) {
-            response = `El ${result.details.service || 'cambio de pantalla'} para ${result.details.device || 'ese dispositivo'} tiene un costo de ${result.price} pesos.`;
-            if (result.details.time) {
-                response += ` El tiempo de reparación es ${result.details.time}.`;
-            }
-            if (result.details.notes) {
-                response += ` Información adicional: ${result.details.notes}`;
-            }
-        } else if (result.confidence >= 0.5) {
-            response = `Encontré información similar: el ${result.details.service || 'servicio'} para ${result.details.device || 'un dispositivo parecido'} cuesta aproximadamente ${result.price} pesos.`;
-            if (result.details.similarity) {
-                response += ` (Coincidencia: ${Math.round(result.confidence * 100)}%)`;
-            }
-            response += " ¿Es exactamente este dispositivo el que necesitas?";
-        } else {
-            response = `Basado en dispositivos similares, el precio aproximado sería alrededor de ${result.price} pesos.`;
-            response += " Te recomiendo confirmar con el modelo exacto para darte un precio preciso.";
-        }
-
-        // Logging para debugging
-        logger.info(`✅ PRECIO ENCONTRADO: ${result.price} (método: ${result.method}, confianza: ${result.confidence})`);
-
-        return response;
-    },
-});
-
 /**
  * HERRAMIENTA AVANZADA DE MEMORIA CONVERSACIONAL
  * Integra límites dinámicos + determinismo + enriquecimiento para memoria
@@ -915,13 +856,75 @@ const conversationMemoryTool = new DynamicTool({
     },
 });
 
-const tools = [
-    preciseSearchTool,        // ← Para precios exactos (PostgreSQL)
-    conversationMemoryTool,   // ← Para memoria conversacional (ChromaDB)
-    knowledgeSearchTool,      // ← Para conocimiento general (ChromaDB)
-    customerHistoryTool,      // ← Para historial estructurado (PostgreSQL)
-    escalateToHumanTool,      // ← Para escalamiento
-];
+const getTools = (llm) => {
+    const priceExtractionSystem = new PriceExtractionSystem(llm);
+
+    const preciseSearchTool = new DynamicTool({
+        name: "consultar_precio_preciso",
+        description: "Herramienta ESPECIALIZADA para consultas de precios. Usa múltiples estrategias (búsqueda exacta, difusa) para encontrar precios precisos. Úsala SIEMPRE que el cliente pregunte por precios específicos de dispositivos. Entrada: descripción completa de lo que busca el cliente.",
+        func: async (query) => {
+            const schema = {
+                required: ['dispositivo'],
+                optional: ['servicio'],
+                types: {
+                    dispositivo: 'string',
+                    servicio: 'string'
+                }
+            };
+            const args = { dispositivo: query, servicio: 'pantalla' }; // Asumimos pantalla por defecto si no se especifica
+            const validation = validateArguments('consultar_precio_preciso', args, schema);
+            if (!validation.isValid) {
+                return `Error de argumentos: ${validation.errors.join(', ')}`;
+            }
+
+            const result = await performanceMonitor.measureAsync('consultar_precio_preciso', async () => {
+                logger.info(`🎯 CONSULTA DE PRECIO PRECISO: "${query}"`);
+                return await priceExtractionSystem.extractPrice(query);
+            }, { query });
+
+            if (!result || !result.price) {
+                logger.warn(`❌ No se encontró precio para: "${query}"`);
+                return "No se encontró información de precio específica para ese dispositivo. ¿Podrías proporcionarme más detalles sobre el modelo exacto?";
+            }
+
+            // Formatear respuesta según nivel de confianza
+            let response = "";
+
+            if (result.confidence >= 0.8) {
+                response = `El ${result.details.service || 'cambio de pantalla'} para ${result.details.device || 'ese dispositivo'} tiene un costo de ${result.price} pesos.`;
+                if (result.details.time) {
+                    response += ` El tiempo de reparación es ${result.details.time}.`;
+                }
+                if (result.details.notes) {
+                    response += ` Información adicional: ${result.details.notes}`;
+                }
+            } else if (result.confidence >= 0.5) {
+                response = `Encontré información similar: el ${result.details.service || 'servicio'} para ${result.details.device || 'un dispositivo parecido'} cuesta aproximadamente ${result.price} pesos.`;
+                if (result.details.similarity) {
+                    response += ` (Coincidencia: ${Math.round(result.confidence * 100)}%)`;
+                }
+                response += " ¿Es exactamente este dispositivo el que necesitas?";
+            } else {
+                response = `Basado en dispositivos similares, el precio aproximado sería alrededor de ${result.price} pesos.`;
+                response += " Te recomiendo confirmar con el modelo exacto para darte un precio preciso.";
+            }
+
+            // Logging para debugging
+            logger.info(`✅ PRECIO ENCONTRADO: ${result.price} (método: ${result.method}, confianza: ${result.confidence})`);
+
+            return response;
+        },
+    });
+
+    return [
+        preciseSearchTool,        // ← Para precios exactos (PostgreSQL)
+        conversationMemoryTool,   // ← Para memoria conversacional (ChromaDB)
+        knowledgeSearchTool,      // ← Para conocimiento general (ChromaDB)
+        customerHistoryTool,      // ← Para historial estructurado (PostgreSQL)
+        escalateToHumanTool,      // ← Para escalamiento
+    ];
+}
+
 
 /**
  * FUNCIÓN DE SALUD ARQUITECTÓNICA PARA TOOLS
@@ -984,7 +987,7 @@ function getArchitecturalHealth() {
 }
 
 module.exports = {
-    tools,
+    getTools,
     crossSourceValidator,
     performanceMonitor,
     getArchitecturalHealth

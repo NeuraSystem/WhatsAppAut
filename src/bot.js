@@ -5,7 +5,9 @@ const qrcode = require('qrcode-terminal');
 const CircuitBreaker = require('opossum');
 
 const config = require('./utils/config');
+const runMigrations = require('./scripts/run-migrations');
 const { initializeDatabase } = require('./database/pg');
+const { invalidateCache } = require('./services/semanticCache');
 const { isChatPaused } = require('./utils/chatState');
 const logger = require('./utils/logger');
 const { SalvaCellAgentExecutor, OllamaError } = require('./services/agentExecutor');
@@ -34,12 +36,15 @@ class SalvaCellPureOrchestrator {
 
     async initialize() {
         try {
+            logger.info('🚀 Ejecutando migraciones de base de datos...');
+            await runMigrations();
             logger.info('🗄️ Inicializando base de datos...');
             await initializeDatabase();
             await this.initializePureOrchestrator();
             await this.initializeWhatsAppClient();
             this.setupEventHandlers();
             this.setupCircuitBreaker();
+            this.setupCacheInvalidation();
             logger.info('🤖 SalvaCellPureOrchestrator listo.');
         } catch (error) {
             logger.error('🤖 Error inicializando bot puro:', error);
@@ -85,6 +90,13 @@ class SalvaCellPureOrchestrator {
         this.agentBreaker.fallback(() => {
             throw new Error('CIRCUIT_BREAKER_OPEN');
         });
+    }
+
+    setupCacheInvalidation() {
+        setInterval(() => {
+            logger.info('🧹 Ejecutando invalidación de caché semántico...');
+            invalidateCache();
+        }, config.semanticCache.invalidateInterval);
     }
 
     setupEventHandlers() {

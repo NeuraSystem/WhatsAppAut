@@ -1,12 +1,13 @@
 // src/services/semanticCache.js
 
 const { ChromaClient } = require('chromadb');
-const { embeddingEngine } = require('./embeddingEngine');
+const { initializeEmbeddingEngine } = require('./embeddingEngine');
 const logger = require('../utils/logger');
+const CircuitBreaker = require('opossum');
+const config = require('../utils/config');
 
 const CHROMA_URL = process.env.CHROMA_URL || 'http://localhost:8000';
 const CACHE_COLLECTION_NAME = 'cache_semantico';
-const SIMILARITY_THRESHOLD = process.env.SEMANTIC_CACHE_THRESHOLD || 0.95; // Umbral de similitud muy alto
 
 const client = new ChromaClient({ path: CHROMA_URL });
 let cacheCollection;
@@ -34,27 +35,43 @@ class LangChainEmbeddingAdapter {
 }
 
 // Crear el adapter para ChromaDB
-const embeddingAdapter = new LangChainEmbeddingAdapter(embeddingEngine);
+let embeddingAdapter;
+
+const chromaOptions = {
+    timeout: 10000, // 10 segundos
+    errorThresholdPercentage: 50,
+    resetTimeout: 30000 // 30 segundos
+};
+
+const chromaBreaker = new CircuitBreaker(async () => {
+    const embeddingEngine = await initializeEmbeddingEngine();
+    if (!embeddingEngine) {
+        throw new Error("Embedding engine not available for ChromaDB");
+    }
+    embeddingAdapter = new LangChainEmbeddingAdapter(embeddingEngine);
+    return client.getOrCreateCollection({
+        name: CACHE_COLLECTION_NAME,
+        embeddingFunction: embeddingAdapter
+    });
+}, chromaOptions);
+
+chromaBreaker.on('open', () => logger.warn('ChromaDB Circuit Breaker ABIERTO.'));
+chromaBreaker.on('close', () => logger.info('ChromaDB Circuit Breaker CERRADO.'));
+chromaBreaker.fallback(() => {
+    logger.error('ChromaDB fallback: No se pudo inicializar la colección de caché.');
+    return null;
+});
+
 
 /**
  * Inicializa la colección de caché semántico.
  */
 async function initializeCache() {
     try {
-        // PRIMERO: Intentar eliminar la colección rota
-        try {
-            await client.deleteCollection({ name: CACHE_COLLECTION_NAME });
-            logger.info("Colección de caché rota eliminada");
-        } catch (deleteError) {
-            logger.info("No había colección de caché previa o ya estaba eliminada");
+        cacheCollection = await chromaBreaker.fire();
+        if (cacheCollection) {
+            logger.info("Caché semántico inicializado CORRECTAMENTE con adapter compatible.");
         }
-        
-        // SEGUNDO: Crear nueva con adapter correcto
-        cacheCollection = await client.getOrCreateCollection({ 
-            name: CACHE_COLLECTION_NAME,
-            embeddingFunction: embeddingAdapter 
-        });
-        logger.info("Caché semántico inicializado CORRECTAMENTE con adapter compatible.");
     } catch (error) {
         logger.error("Error al inicializar el caché semántico:", error);
         cacheCollection = null;
@@ -104,7 +121,7 @@ async function findInCache(userQuery, options = {}) {
             const timestamp = meta.timestamp || Date.now();
             const age = Date.now() - timestamp;
             if (
-                similarity >= SIMILARITY_THRESHOLD &&
+                similarity >= config.semanticCache.similarityThreshold &&
                 coherence >= minCoherence &&
                 age <= maxAgeMs
             ) {

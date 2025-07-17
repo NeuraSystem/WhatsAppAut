@@ -4,8 +4,11 @@
 const { pool } = require('../database/pg');
 const { findInCache, addToCache } = require('./semanticCache');
 const { ChromaClient } = require('chromadb');
-const { embeddingEngine } = require('./embeddingEngine');
+const { initializeEmbeddingEngine } = require('./embeddingEngine');
 const { KnowledgeCoherenceLayer } = require('./knowledge/KnowledgeCoherenceLayer');
+const { RunnableSequence } = require("@langchain/core/runnables");
+const { PromptTemplate } = require("@langchain/core/prompts");
+const { StructuredOutputParser } = require("langchain/output_parsers");
 const chromaClient = new ChromaClient({ path: process.env.CHROMA_URL || 'http://localhost:8000' });
 const logger = require('../utils/logger');
 
@@ -17,12 +20,39 @@ const coherenceLayer = new KnowledgeCoherenceLayer();
  * Combina múltiples estrategias para garantizar precisión
  */
 class PriceExtractionSystem {
-    constructor() {
+    constructor(llm) {
+        this.llm = llm;
+        this.entityExtractionChain = this.createEntityExtractionChain();
         this.strategies = [
             this.exactDatabaseMatch.bind(this),
             this.fuzzyDatabaseMatch.bind(this),
             this.fallbackSearch.bind(this)
         ];
+    }
+
+    createEntityExtractionChain() {
+        const parser = StructuredOutputParser.fromNamesAndDescriptions({
+            device: "El modelo específico del celular que el usuario mencionó.",
+            service: "El tipo de reparación o servicio que el usuario necesita (ej. 'pantalla', 'bateria', 'puerto de carga').",
+        });
+
+        const formatInstructions = parser.getFormatInstructions();
+
+        const prompt = new PromptTemplate({
+            template: `
+                Extrae el dispositivo y el servicio de la siguiente consulta de usuario.
+                Consulta: "{query}"
+                {format_instructions}
+            `,
+            inputVariables: ["query"],
+            partialVariables: { format_instructions: formatInstructions },
+        });
+
+        return RunnableSequence.from([
+            prompt,
+            this.llm,
+            parser,
+        ]);
     }
 
     /**
@@ -39,9 +69,8 @@ class PriceExtractionSystem {
     async extractPrice(query) {
         logger.info(`🔍 INICIANDO EXTRACCIÓN DE PRECIO PARA: "${query}"`);
 
-        // 1. NORMALIZAR CONSULTA
-        const normalizedQuery = this.normalizeQuery(query);
-        const extracted = this.extractDeviceAndService(normalizedQuery);
+        // 1. EXTRAER ENTIDADES CON LCEL
+        const extracted = await this.entityExtractionChain.invoke({ query });
 
         logger.info(`📱 DISPOSITIVO EXTRAÍDO: "${extracted.device}"`);
         logger.info(`🔧 SERVICIO EXTRAÍDO: "${extracted.service}"`);
@@ -263,59 +292,6 @@ class PriceExtractionSystem {
         return null;
     }
 
-    /**
-     * Normaliza la consulta del usuario
-     */
-    normalizeQuery(query) {
-        return query
-            .toLowerCase()
-            .replace(/[¿?¡!]/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-
-    /**
-     * Extrae dispositivo y servicio de la consulta
-     */
-    extractDeviceAndService(query) {
-        // Patrones comunes de dispositivos
-        const devicePatterns = [
-            /(?:para\s+(?:un\s+)?)?(\w+\s+\w+\d+(?:\s+\w+)?)/i,  // "para un Samsung A54"
-            /(?:de\s+)?(\w+\s+\w+\d+(?:\s+\w+)?)/i,              // "de iPhone 12"
-            /(\w+\s+\w+\d+(?:\s+\w+)?)/i                         // "Motorola G60"
-        ];
-
-        // Patrones de servicios (BATERÍA DEBE IR ANTES QUE PANTALLA)
-        const servicePatterns = [
-            { pattern: /bater[ií]a|battery|pila/i, service: 'bateria' },
-            { pattern: /carga|charging|puerto/i, service: 'puerto_carga' },
-            { pattern: /c[aá]mara|camera/i, service: 'camara' },
-            { pattern: /altavoz|speaker|audio/i, service: 'altavoz' },
-            { pattern: /pantalla|display|screen/i, service: 'pantalla' }  // ← Pantalla al final como default
-        ];
-
-        let device = '';
-        let service = 'pantalla'; // Default
-
-        // Extraer dispositivo
-        for (const pattern of devicePatterns) {
-            const match = query.match(pattern);
-            if (match) {
-                device = match[1].trim();
-                break;
-            }
-        }
-
-        // Extraer servicio
-        for (const { pattern, service: serviceName } of servicePatterns) {
-            if (pattern.test(query)) {
-                service = serviceName;
-                break;
-            }
-        }
-
-        return { device, service };
-    }
 
     /**
      * Obtiene el nombre de la estrategia por índice

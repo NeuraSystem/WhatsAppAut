@@ -4,7 +4,7 @@ const { AgentExecutor, createReactAgent } = require("langchain/agents");
 const { ChatOllama } = require("@langchain/community/chat_models/ollama");
 const { PromptTemplate } = require("@langchain/core/prompts");
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const { tools } = require('./tools');
+const { getTools } = require('./tools');
 const logger = require('../utils/logger');
 const config = require('../utils/config');
 const { findInCache, addToCache } = require('./semanticCache');
@@ -46,8 +46,8 @@ class SalvaCellAgentExecutor {
             temperature: options.temperature || config.orchestrator.temperature,
         });
 
-        this.tools = tools;
-        this.guardrails = new Guardrails();
+        this.tools = getTools(this.primaryLlm);
+        this.guardrails = new Guardrails(this.primaryLlm);
         this.options = options;
         this.agentExecutor = null; // Will be initialized async
 

@@ -49,6 +49,17 @@ const config = {
         ollamaBaseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
         ollamaAgentModel: process.env.OLLAMA_AGENT_MODEL || "qwen2.5:1.5b-instruct-q4_0",
     },
+
+    // Configuración del caché semántico
+    semanticCache: {
+        similarityThreshold: parseFloat(process.env.SEMANTIC_CACHE_THRESHOLD) || 0.95,
+        invalidateInterval: parseInt(process.env.SEMANTIC_CACHE_INVALIDATE_INTERVAL, 10) || 3600000, // 1 hora
+    },
+
+    // Configuración de Guardrails
+    guardrails: {
+        responseMaxLength: parseInt(process.env.GUARDRAILS_MAX_LENGTH, 10) || 500,
+    },
 };
 
 const validateConfig = () => {
