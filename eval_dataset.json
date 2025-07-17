@@ -1,0 +1,39 @@
+{
+  "evaluaciones": [
+    {
+      "id": "test_001",
+      "nombre": "Consulta básica de precios",
+      "pregunta": "¿Cuánto cuesta un iPhone 15?",
+      "respuesta_ideal_contiene": ["precio", "iPhone", "contactar"],
+      "categoria": "precios"
+    },
+    {
+      "id": "test_002", 
+      "nombre": "Consulta de reparación",
+      "pregunta": "Mi teléfono Samsung no enciende",
+      "respuesta_ideal_contiene": ["técnico", "revisar", "contactar"],
+      "categoria": "reparaciones"
+    },
+    {
+      "id": "test_003",
+      "nombre": "Consulta de información de contacto",
+      "pregunta": "¿Cuál es su dirección?",
+      "respuesta_ideal_contiene": ["686", "226", "2377"],
+      "categoria": "informacion_empresa"
+    },
+    {
+      "id": "test_004",
+      "nombre": "Consulta fuera de contexto",
+      "pregunta": "¿Cómo está el clima hoy?",
+      "respuesta_ideal_contiene": ["ayudar", "celular", "SalvaCell"],
+      "categoria": "fuera_contexto"
+    },
+    {
+      "id": "test_005",
+      "nombre": "Consulta de disponibilidad",
+      "pregunta": "¿Tienen disponible Xiaomi Redmi Note 12?",
+      "respuesta_ideal_contiene": ["contactar", "disponibilidad", "Xiaomi"],
+      "categoria": "disponibilidad"
+    }
+  ]
+}

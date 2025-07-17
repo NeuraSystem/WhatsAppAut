@@ -1,0 +1,13 @@
+# Microservicio base para HallucinationDetector
+# Dockerfile para microservicio Node.js (HallucinationDetector)
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY ../../src/services/hallucinationDetector.js ./hallucinationDetector.js
+COPY ../../package.json ./
+
+RUN npm install --production
+
+CMD ["node", "hallucinationDetector.js"]

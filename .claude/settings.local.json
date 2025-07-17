@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(node:*)",
+      "Bash(wget:*)",
+      "Bash(chmod:*)",
+      "Bash(sudo mv:*)",
+      "Bash(curl:*)",
+      "Bash(npm install)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(true)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(npm install:*)"
+    ],
+    "deny": []
+  }
+}

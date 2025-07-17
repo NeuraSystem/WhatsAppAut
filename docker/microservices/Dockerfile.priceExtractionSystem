@@ -1,0 +1,13 @@
+# Microservicio base para PriceExtractionSystem
+# Dockerfile para microservicio Node.js (PriceExtractionSystem)
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY ../../src/services/priceExtractionSystem.js ./priceExtractionSystem.js
+COPY ../../package.json ./
+
+RUN npm install --production
+
+CMD ["node", "priceExtractionSystem.js"]

@@ -1,0 +1,52 @@
+# Orquestación de microservicios para PriceExtractionSystem y EmbeddingEngine
+version: '3.9'
+services:
+  embedding-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.embeddingEngine
+    container_name: embedding_engine
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microservices_net
+
+  price-extraction-system:
+    build:
+      context: .
+      dockerfile: Dockerfile.priceExtractionSystem
+    container_name: price_extraction_system
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microservices_net
+    depends_on:
+      - embedding-engine
+
+  knowledge-coherence-layer:
+    build:
+      context: .
+      dockerfile: Dockerfile.KnowledgeCoherenceLayer
+    container_name: knowledge_coherence_layer
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microservices_net
+
+  hallucination-detector:
+    build:
+      context: .
+      dockerfile: Dockerfile.hallucinationDetector
+    container_name: hallucination_detector
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - microservices_net
+
+networks:
+  microservices_net:
+    driver: bridge

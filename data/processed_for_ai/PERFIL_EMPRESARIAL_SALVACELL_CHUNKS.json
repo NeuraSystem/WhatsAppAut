@@ -1,0 +1,603 @@
+[
+  {
+    "id": "informacion_corporativa_0001",
+    "content": "Laboratorio Electronico SalvaCell, también conocido como Salva Cell, es un taller especializado en reparación y mantenimiento de dispositivos móviles ubicado en Av. C. del Refugio, Valle de las Misiones. Puedes encontrarnos en Google Maps: https://g.co/kgs/FpfFnJy. Operamos como establecimiento físico con modalidad de atención presencial complementada con soporte virtual inteligente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Corporativa",
+      "subsection": "Identificación del Negocio",
+      "chunk_type": "general_info"
+    }
+  },
+  {
+    "id": "horarios_operacion_0002",
+    "content": "SalvaCell opera con horarios extendidos: Lunes a Sábado de 11:00 AM a 9:00 PM y Domingos de 12:00 PM a 5:00 PM, totalizando 58 horas semanales de atención presencial. Adicionalmente, ofrecemos disponibilidad virtual 24/7 a través de nuestra asistente IA 'Sofia', que proporciona soporte continuo para consultas y pre-calificación de servicios.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Corporativa",
+      "subsection": "Horarios de Operación",
+      "chunk_type": "general_info"
+    }
+  },
+  {
+    "id": "servicios_principales_0003",
+    "content": "Nuestro catálogo de servicios principales incluye: Reparación de Pantallas para Samsung, iPhone, Xiaomi y Motorola con opciones de pantallas originales y genéricas cubriendo más de 295 modelos en inventario. Realizamos Reemplazo de Baterías certificadas de alta calidad que no afectan otras funciones del equipo, mejorando significativamente el rendimiento.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Catálogo de Servicios y Especialidades",
+      "subsection": "Servicios Principales",
+      "chunk_type": "service_description"
+    }
+  },
+  {
+    "id": "servicios_principales_0004",
+    "content": "También reparamos componentes especializados como cámaras frontales y traseras, altavoces, micrófonos, puertos de carga y sensores diversos. Nos especializamos en las principales marcas del mercado: Samsung (líneas A, S, Note, Galaxy), iPhone (todas las generaciones disponibles), Xiaomi (Redmi, Mi, POCO) y Motorola (Moto G, Moto E, Edge).",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Catálogo de Servicios y Especialidades",
+      "subsection": "Servicios Principales",
+      "chunk_type": "service_description"
+    }
+  },
+  {
+    "id": "inventario_precios_0005",
+    "content": "Nuestro inventario de pantallas se distribuye estratégicamente en rangos de precios: $1,300-$1,500 para gama básica y media (180+ modelos), $1,500-$2,000 para gama media-alta (80+ modelos), y $2,000+ para gama premium (35+ modelos). Esta estructura permite opciones flexibles según el presupuesto del cliente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Catálogo de Servicios y Especialidades",
+      "subsection": "Inventario de Precios",
+      "chunk_type": "service_description"
+    }
+  },
+  {
+    "id": "gestion_calidad_0006",
+    "content": "Nuestra estructura operativa se basa en gestión de calidad con tiempo de reparación estándar el mismo día para dispositivos traídos antes de las 4 PM. Aplicamos la misma política de garantía tanto para pantallas originales como genéricas, con verificación post-reparación obligatoria y uso exclusivo de componentes certificados.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Estructura Operativa y Procesos",
+      "subsection": "Gestión de Calidad",
+      "chunk_type": "operational_process"
+    }
+  },
+  {
+    "id": "atencion_cliente_0007",
+    "content": "El sistema de atención utiliza el modelo CEA (Conexión Empática Asistida) con Sofia como primera línea y escalamiento disponible a técnicos humanos bajo demanda. Registramos preferencias y historial de cliente para personalización del servicio con atención inmediata sin citas previas para evaluación.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Estructura Operativa y Procesos",
+      "subsection": "Sistema de Atención al Cliente",
+      "chunk_type": "operational_process"
+    }
+  },
+  {
+    "id": "politicas_servicio_0008",
+    "content": "Nuestras políticas de servicio se fundamentan en cuatro pilares: Transparencia en Precios con cotización inmediata sin sorpresas, Flexibilidad de Opciones ofreciendo alternativas original vs. genérica según presupuesto del cliente, Atención Inmediata sin necesidad de citas previas para evaluación, y Satisfacción Garantizada respaldada por política de garantía clara y verificable.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Estructura Operativa y Procesos",
+      "subsection": "Políticas de Servicio",
+      "chunk_type": "operational_process"
+    }
+  },
+  {
+    "id": "estructura_organizacional_0009",
+    "content": "La estructura organizacional de SalvaCell incluye Administradores del Sistema con gestión completa vía WhatsApp, Técnicos Especializados para reparación física de dispositivos, Sofia (IA) para atención al cliente 24/7 y pre-calificación, más Soporte Humano disponible para casos complejos.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Estructura Organizacional",
+      "subsection": "Personal y Roles",
+      "chunk_type": "operational_process"
+    }
+  },
+  {
+    "id": "capacidades_administrativas_0010",
+    "content": "El sistema administrativo permite gestión integral con comandos vía WhatsApp: gestión de conocimiento para actualización de base de datos, control de bot para pausar/reanudar por cliente, gestión de administradores, manejo de fallos con monitoreo y resolución, análisis de contexto conversacional, y monitoreo del sistema con health checks automáticos.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Estructura Organizacional",
+      "subsection": "Capacidades Administrativas",
+      "chunk_type": "operational_process"
+    }
+  },
+  {
+    "id": "infraestructura_tecnologica_0011",
+    "content": "Nuestra infraestructura tecnológica utiliza WhatsApp Business como plataforma principal, integrada con IA Conversacional basada en Claude 3 Haiku + Qwen2.5 Local. La arquitectura incluye PostgreSQL + ChromaDB vectorial para base de datos, hosting en Docker containers para máxima portabilidad, y sistema automatizado de respaldos.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Tecnología e Innovación",
+      "subsection": "Infraestructura Tecnológica",
+      "chunk_type": "tech_innovation"
+    }
+  },
+  {
+    "id": "capacidades_ia_0012",
+    "content": "Las capacidades de IA abarcan procesamiento de lenguaje natural con comprensión contextual avanzada, búsqueda semántica para recuperación inteligente de información, aprendizaje continuo basado en interacciones, y personalización adaptativa al estilo de cada cliente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Tecnología e Innovación",
+      "subsection": "Capacidades de IA",
+      "chunk_type": "tech_innovation"
+    }
+  },
+  {
+    "id": "caracteristicas_tecnicas_0013",
+    "content": "Nuestro sistema tecnológico híbrido Local + Cloud maximiza eficiencia con características avanzadas: Circuit Breakers para protección contra fallos de API, Rate Limiting para control de recursos, Cache Inteligente que acelera respuestas 8x, y Monitoreo Proactivo con detección automática de problemas. Esta arquitectura garantiza disponibilidad del 99.5% con tiempo de respuesta promedio menor a 3 segundos.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Tecnología e Innovación",
+      "subsection": "Características Técnicas Avanzadas",
+      "chunk_type": "tech_innovation"
+    }
+  },
+  {
+    "id": "ventajas_competitivas_0014",
+    "content": "Nuestras ventajas competitivas se fundamentan en cinco diferenciadores únicos: Asistente IA Empática (Sofia con modelo CEA), Transparencia Total en precios y tiempos, Atención 24/7 con disponibilidad continua, Flexibilidad de Presupuesto con opciones original vs. genérica, y Tecnología Avanzada mediante sistema híbrido local/cloud.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Ventajas Competitivas",
+      "subsection": "Diferenciadores Únicos",
+      "chunk_type": "competitive_advantage"
+    }
+  },
+  {
+    "id": "propuesta_valor_0015",
+    "content": "La propuesta de valor integra rapidez con reparaciones en 30-45 minutos, calidad certificada con garantía, conveniencia sin necesidad de citas, transparencia informativa completa, e innovación tecnológica que optimiza la experiencia del cliente. Combinamos expertise técnico tradicional con eficiencia de nueva generación.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Ventajas Competitivas",
+      "subsection": "Propuesta de Valor",
+      "chunk_type": "competitive_advantage"
+    }
+  },
+  {
+    "id": "segmentacion_clientes_0016",
+    "content": "Nuestro segmento de clientes típico comprende usuarios de smartphones de 18-55 años principalmente, ubicados en Valle de las Misiones y alrededores, con perfil económico variado que aprovecha nuestras opciones para todos los presupuestos. Son usuarios familiarizados con WhatsApp que valoran la atención personalizada y la transparencia en el servicio.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Segmentación de Clientes",
+      "subsection": "Perfil de Cliente Típico",
+      "chunk_type": "general_info"
+    }
+  },
+  {
+    "id": "patrones_consulta_0017",
+    "content": "Los patrones de consulta identificados en nuestro sistema muestran distribución específica: 60% consultas de precios, 20% información de ubicación y horarios, 15% consultas de disponibilidad de servicios, y 5% otras consultas diversas. Esta data nos permite optimizar las respuestas más frecuentes de Sofia.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Segmentación de Clientes",
+      "subsection": "Patrones de Consulta Identificados",
+      "chunk_type": "performance_metric"
+    }
+  },
+  {
+    "id": "metricas_operativas_0018",
+    "content": "Nuestras métricas de rendimiento demuestran excelencia operativa: Tiempo de Respuesta Promedio menor a 3 segundos, Precisión de IA superior al 90% en detección de intenciones, Satisfacción del Cliente estimada en >4.5/5, Disponibilidad del Sistema 99.5% uptime, y Cobertura de Inventario con 295+ modelos de pantallas disponibles.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Métricas de Rendimiento",
+      "subsection": "Indicadores Operativos",
+      "chunk_type": "performance_metric"
+    }
+  },
+  {
+    "id": "eficiencia_tecnologica_0019",
+    "content": "La eficiencia tecnológica alcanza niveles superiores: Cache Hit Rate del 85%+ en consultas repetidas, Fallback Success Rate del 98% para consultas complejas, Error Recovery <1% fallos críticos, y Response Consistency del 95%+ en resultados consistentes. Estos indicadores validan la robustez de nuestra arquitectura híbrida.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Métricas de Rendimiento",
+      "subsection": "Eficiencia Tecnológica",
+      "chunk_type": "performance_metric"
+    }
+  },
+  {
+    "id": "politicas_privacidad_0020",
+    "content": "Nuestras políticas internas priorizan la protección de datos con cifrado en PostgreSQL, retención responsable de información para mejora del servicio, anonimización de datos sensibles y acceso controlado exclusivo para administradores autorizados. La confidencialidad del cliente es fundamental en nuestra operación.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Políticas y Normativas Internas",
+      "subsection": "Política de Privacidad",
+      "chunk_type": "policy_rule"
+    }
+  },
+  {
+    "id": "normas_atencion_0021",
+    "content": "Las normas de atención incluyen presentación estratégica de Sofia en segunda interacción para generar confianza, escalamiento disponible a conexión humana bajo demanda, transparencia completa en identificación como asistente virtual, y personalización avanzada mediante uso de nombres y registro de preferencias del cliente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Políticas y Normativas Internas",
+      "subsection": "Normas de Atención",
+      "chunk_type": "policy_rule"
+    }
+  },
+  {
+    "id": "estandares_calidad_0022",
+    "content": "Los estándares de calidad SalvaCell garantizan respuestas precisas con información verificada y actualizada constantemente, consistencia en el mismo nivel de servicio en cada interacción, profesionalismo con tono apropiado y empático, y resolución efectiva enfocada en solucionar las necesidades específicas del cliente de manera integral.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Políticas y Normativas Internas",
+      "subsection": "Estándares de Calidad",
+      "chunk_type": "policy_rule"
+    }
+  },
+  {
+    "id": "contexto_industria_0023",
+    "content": "El contexto de la industria de reparación móvil muestra crecimiento sostenido del 8-12% anual, con 73% de usuarios prefiriendo reparar vs. reemplazar dispositivos debido a conciencia ambiental creciente y consideraciones económicas. La digitalización acelerada post-COVID ha transformado las expectativas de atención al cliente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Tendencias del Mercado",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "segmentacion_mercado_0024",
+    "content": "La segmentación del sector de reparación móvil incluye: Talleres Familiares (40% del mercado) con atención personalizada y precios competitivos, Cadenas Especializadas (35%) con procesos estandarizados y mayor inventario, y Centros de Servicio Oficial (25%) con garantía de fábrica pero precios premium y tiempos de espera largos.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Segmentación Típica del Sector",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "factores_exito_operacionales_0025",
+    "content": "Los factores críticos de éxito operacionales incluyen: tiempo de respuesta menor a 1 hora esperado por clientes, inventario amplio de componentes para reducir pérdida de ventas, calidad técnica en reparaciones que genere recomendaciones boca a boca, y ubicación estratégica accesible que determine volumen de tráfico de clientes.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Factores Críticos de Éxito",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "factores_exito_comerciales_0026",
+    "content": "Comercialmente, los factores críticos incluyen: transparencia en precios valorada por 89% de clientes, flexibilidad de presupuesto con opciones original/genérica que aumenta conversión, política de garantía clara que influye en 76% de decisiones de compra, y experiencia de atención al cliente que determina lealtad y recomendación.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Factores Críticos de Éxito",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "desafios_operacionales_0027",
+    "content": "Los desafíos operacionales del sector abarcan: variabilidad de calidad en componentes con diferenciación compleja original vs. genérico, capacitación técnica continua para nuevas tecnologías móviles y herramientas especializadas, y gestión compleja de inventario para múltiples marcas y modelos con rotación eficiente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Desafíos Comunes del Sector",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "desafios_comerciales_0028",
+    "content": "Los desafíos comerciales incluyen: competencia intensa de precios con presión por márgenes reducidos, estacionalidad de demanda que afecta flujo de efectivo y planificación de personal, y expectativas crecientes de cliente por inmediatez en reparaciones, garantías extendidas y atención personalizada constante.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Desafíos Comunes del Sector",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "innovaciones_tecnologicas_0029",
+    "content": "Las innovaciones emergentes tecnológicas incluyen: diagnóstico automatizado con IA para detección de problemas, realidad aumentada para guías de reparación inmersivas, IoT en taller para monitoreo de equipos y procesos, y blockchain para trazabilidad completa de componentes y garantía de autenticidad.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Innovaciones Emergentes",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "innovaciones_comerciales_0030",
+    "content": "Las innovaciones comerciales emergentes abarcan: atención omnicanal integrada (WhatsApp, web, presencial), suscripciones de mantenimiento con modelos recurrentes, marketplace B2B especializado de repuestos, y servicios a domicilio para reparación in-situ en casos específicos que optimizan conveniencia del cliente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Innovaciones Emergentes",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "innovaciones_ambientales_0031",
+    "content": "Las innovaciones ambientales del sector incluyen: reciclaje de componentes con enfoque de economía circular, reparaciones preventivas priorizando mantenimiento vs. reemplazo, certificaciones verdes para procesos sustentables, y componentes remanufacturados como alternativas ecológicas que reducen impacto ambiental.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Innovaciones Emergentes",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "mejores_practicas_atencion_0032",
+    "content": "Las mejores prácticas en atención al cliente incluyen: comunicación proactiva con notificaciones automáticas de progreso, explicación clara de procedimientos técnicos, educación sobre cuidado preventivo del dispositivo, transparencia total en precios sin letra pequeña, tiempos realistas de reparación, y seguimiento post-venta con verificación de satisfacción.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Mejores Prácticas",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "mejores_practicas_operativas_0033",
+    "content": "En gestión operativa, las mejores prácticas incluyen: estandarización completa de procesos de diagnóstico y reparación, protocolos de control de calidad sistemático, capacitación continua en actualizaciones técnicas y atención al cliente, y alianzas estratégicas con proveedores confiables, centros de capacitación y networks de referidos.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Información Complementaria del Sector",
+      "subsection": "Mejores Prácticas",
+      "chunk_type": "industry_context"
+    }
+  },
+  {
+    "id": "posicionamiento_competitivo_0034",
+    "content": "SalvaCell se posiciona como 'Taller Tecnológico de Nueva Generación' combinando expertise técnico tradicional con innovación en atención al cliente, transparencia y honestidad comercial total, eficiencia operativa optimizada, y adaptabilidad completa a preferencias individuales del cliente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Conclusiones del Perfil Empresarial",
+      "subsection": "Posicionamiento Competitivo",
+      "chunk_type": "competitive_advantage"
+    }
+  },
+  {
+    "id": "propuesta_valor_unica_0035",
+    "content": "Nuestra propuesta de valor única es: 'La única reparadora que te atiende como humano pero con la eficiencia de la tecnología, ofreciendo transparencia total, opciones flexibles y disponibilidad cuando lo necesitas.' Esta diferenciación nos posiciona como líderes en innovación de servicio al cliente en el sector.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "Conclusiones del Perfil Empresarial",
+      "subsección": "Propuesta de Valor Única",
+      "chunk_type": "competitive_advantage"
+    }
+  },
+  {
+    "id": "reglamento_identificacion_0036",
+    "content": "Para la entrega de cualquier dispositivo reparado se requiere identificación oficial vigente (INE, pasaporte, cédula profesional o licencia de conducir). El nombre en la identificación debe coincidir exactamente con el registrado en la orden de servicio. Solo personas mayores de edad pueden autorizar reparaciones y recoger dispositivos.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "ENTREGA Y RECEPCIÓN DE EQUIPOS",
+      "chunk_type": "policy_rule",
+      "rule_number": 1
+    }
+  },
+  {
+    "id": "reglamento_representante_0037",
+    "content": "En caso de que una tercera persona recoja el equipo, deberá presentar carta poder notariada más identificación del titular y del representante. Es indispensable presentar el ticket o folio de servicio para la entrega del dispositivo - sin excepciones. La reposición de documentos perdidos tiene un costo administrativo de $50 pesos.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "ENTREGA Y RECEPCIÓN DE EQUIPOS",
+      "chunk_type": "policy_rule",
+      "rule_number": 2
+    }
+  },
+  {
+    "id": "reglamento_garantias_originales_0038",
+    "content": "Refacciones Originales tienen garantía de 30 días naturales a partir de la fecha de reparación. Refacciones Genéricas tienen garantía de 15 días naturales. La cobertura incluye defectos de fabricación del componente y fallas en la instalación. La garantía inicia el día de la entrega del dispositivo reparado al cliente.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "POLÍTICA DE GARANTÍAS",
+      "chunk_type": "policy_rule",
+      "rule_number": 3
+    }
+  },
+  {
+    "id": "reglamento_exclusiones_garantia_0039",
+    "content": "EXCLUSIONES DE GARANTÍA: daños por mal uso (caídas, golpes, contacto con líquidos), manipulación no autorizada por terceros, daños por sobrecarga eléctrica o cargadores no certificados, desgaste normal por uso cotidiano, daños externos posteriores a la entrega, y modificaciones de software (root, jailbreak) posteriores a la reparación.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "POLÍTICA DE GARANTÍAS",
+      "chunk_type": "policy_rule",
+      "rule_number": 4
+    }
+  },
+  {
+    "id": "reglamento_resguardo_gratuito_0040",
+    "content": "TIEMPO DE RESGUARDO GRATUITO: Primer y segundo día son completamente gratuitos. El dispositivo puede permanecer en nuestras instalaciones sin costo durante este período, que representa la última oportunidad de recoger sin penalización económica.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "POLÍTICA DE RESGUARDO Y ALMACENAMIENTO",
+      "chunk_type": "policy_rule",
+      "rule_number": 5
+    }
+  },
+  {
+    "id": "reglamento_comision_resguardo_0041",
+    "content": "A partir del tercer día se cobrará una comisión de $20 pesos diarios por concepto de resguardo y seguridad. La comisión se factura al momento de la entrega del dispositivo y cubre costos de seguridad, espacio de almacenamiento y seguros. El cliente será notificado vía WhatsApp sobre el inicio de comisiones.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "POLÍTICA DE RESGUARDO Y ALMACENAMIENTO",
+      "chunk_type": "policy_rule",
+      "rule_number": 6
+    }
+  },
+  {
+    "id": "reglamento_limite_resguardo_0042",
+    "content": "LÍMITE MÁXIMO DE RESGUARDO: 30 días. Después de este período, el dispositivo se considerará abandonado. Se notificará por WhatsApp y llamada telefónica antes de proceder. Dispositivos abandonados: se recuperará la parte invertida y el resto se donará a sectores de beneficencia pública. No se realizarán reembolsos por dispositivos considerados abandonados.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "POLÍTICA DE RESGUARDO Y ALMACENAMIENTO",
+      "chunk_type": "policy_rule",
+      "rule_number": 7
+    }
+  },
+  {
+    "id": "reglamento_respaldo_datos_0043",
+    "content": "RESPALDO DE INFORMACIÓN: SalvaCell NO se hace responsable por pérdida de datos, fotos, contactos, aplicaciones o información personal. Se sugiere encarecidamente realizar respaldo antes de entregar el dispositivo. Algunos procedimientos pueden requerir formateo o reinicio de fábrica. No ofrecemos servicios de recuperación de datos perdidos durante la reparación.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "RESPONSABILIDADES Y LIMITACIONES",
+      "chunk_type": "policy_rule",
+      "rule_number": 8
+    }
+  },
+  {
+    "id": "reglamento_evaluacion_diagnostico_0044",
+    "content": "EVALUACIÓN Y DIAGNÓSTICO: El diagnóstico inicial es gratuito. Una vez aceptado el presupuesto, el cliente se compromete al pago total. Cualquier trabajo adicional requerirá nueva autorización. El cliente puede declinar la reparación sin costo, recuperando su dispositivo en estado original antes de solicitar refacción si aplica.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "RESPONSABILIDADES Y LIMITACIONES",
+      "chunk_type": "policy_rule",
+      "rule_number": 9
+    }
+  },
+  {
+    "id": "reglamento_dano_multiple_0045",
+    "content": "DISPOSITIVOS CON DAÑO MÚLTIPLE: Se revisará la totalidad del dispositivo para identificar todos los problemas. Se proporcionará cotización completa de todas las reparaciones necesarias. El cliente puede elegir reparar solo algunos componentes bajo su responsabilidad. Reparaciones parciales pueden afectar el funcionamiento general y la garantía aplicable.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "RESPONSABILIDADES Y LIMITACIONES",
+      "chunk_type": "policy_rule",
+      "rule_number": 10
+    }
+  },
+  {
+    "id": "reglamento_comunicacion_oficial_0046",
+    "content": "CANALES DE CONTACTO OFICIAL: WhatsApp es el único medio oficial para consultas y seguimiento. Horario de atención presencial: Lunes a Sábado 11:00 AM - 9:00 PM, Domingos 12:00 PM - 5:00 PM. Soporte virtual 24/7 a través de Sofia (Asistente IA) para consultas generales. Emergencias solo para casos de dispositivos con problemas críticos post-reparación.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "COMUNICACIÓN Y ATENCIÓN",
+      "chunk_type": "policy_rule",
+      "rule_number": 11
+    }
+  },
+  {
+    "id": "reglamento_tiempo_respuesta_0047",
+    "content": "TIEMPO DE RESPUESTA: Consultas por WhatsApp máximo 3 minutos en horario laboral. Presupuestos entregados en máximo 30 minutos posterior a evaluación. Notificación automática del progreso de reparación. Reparaciones estándar entregadas el mismo día si se trae antes de las 4:00 PM.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "COMUNICACIÓN Y ATENCIÓN",
+      "chunk_type": "policy_rule",
+      "rule_number": 12
+    }
+  },
+  {
+    "id": "reglamento_formas_pago_0048",
+    "content": "FORMAS DE PAGO ACEPTADAS: Efectivo en moneda nacional mexicana únicamente, Transferencia Bancaria con comprobante obligatorio antes de entrega, Tarjetas de Débito/Crédito sujeto a disponibilidad del sistema. NO se aceptan cheques personales o empresariales bajo ninguna circunstancia.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "POLÍTICA DE PAGOS",
+      "chunk_type": "policy_rule",
+      "rule_number": 13
+    }
+  },
+  {
+    "id": "reglamento_reembolsos_0049",
+    "content": "POLÍTICA DE REEMBOLSOS: Reembolso del 100% si no se ejecuta la reparación. Pago proporcional al trabajo efectivamente realizado para servicios parciales. Las fallas cubiertas por garantía se reparan sin costo adicional, no se reembolsan. Reembolsos procesados en máximo 5-15 días hábiles.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "POLÍTICA DE PAGOS",
+      "chunk_type": "policy_rule",
+      "rule_number": 14
+    }
+  },
+  {
+    "id": "reglamento_confidencialidad_0050",
+    "content": "PROTECCIÓN DE DATOS PERSONALES: Confidencialidad absoluta de toda información personal del cliente. El personal técnico NO accede a fotos, mensajes, contactos o aplicaciones personales. Solo recopilamos información mínima necesaria para el servicio. Datos de clientes eliminados según normativas de privacidad vigentes con destrucción segura.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "CONFIDENCIALIDAD Y PRIVACIDAD",
+      "chunk_type": "policy_rule",
+      "rule_number": 15
+    }
+  },
+  {
+    "id": "reglamento_seguridad_dispositivos_0051",
+    "content": "SEGURIDAD DE DISPOSITIVOS: Dispositivos almacenados en área segura con acceso restringido. Seguro de responsabilidad con cobertura contra robos, incendios y desastres naturales. Inventario diario y control estricto de todos los dispositivos en resguardo. Cámaras de seguridad con monitoreo 24/7 del área de almacenamiento.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "CONFIDENCIALIDAD Y PRIVACIDAD",
+      "chunk_type": "policy_rule",
+      "rule_number": 16
+    }
+  },
+  {
+    "id": "reglamento_jurisdiccion_0052",
+    "content": "JURISDICCIÓN Y COMPETENCIA: Este reglamento se rige por las leyes mexicanas vigentes. Cualquier disputa se resolverá en tribunales correspondientes. Se buscará resolución amigable antes de procesos legales mediante mediación previa. Español mexicano es el idioma oficial para todas las comunicaciones legales y comerciales.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "CONDICIONES LEGALES",
+      "chunk_type": "policy_rule",
+      "rule_number": 17
+    }
+  },
+  {
+    "id": "reglamento_modificaciones_0053",
+    "content": "MODIFICACIONES AL REGLAMENTO: SalvaCell se reserva el derecho de modificar este reglamento con notificación de 15 días de anticipación. Las condiciones vigentes al momento de recibir el dispositivo aplicarán durante todo el proceso. El uso de nuestros servicios implica aceptación total de este reglamento. Al entregar el dispositivo, el cliente declara haber leído y comprendido completamente estas condiciones.",
+    "metadata": {
+      "document_id": "perfil_empresarial_salvacell",
+      "source_file": "data/raw_sources/PERFIL_EMPRESARIAL_SALVACELL.md",
+      "section": "REGLAMENTO PARA CLIENTES",
+      "subsection": "CONDICIONES LEGALES",
+      "chunk_type": "policy_rule",
+      "rule_number": 18
+    }
+  }
+]
