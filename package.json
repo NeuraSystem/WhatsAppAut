@@ -85,6 +85,7 @@
   "devDependencies": {
     "@types/node": "^24.0.13",
     "benchmark": "^2.1.4",
+    "cloc": "^2.6.0-cloc",
     "concurrently": "^9.2.0",
     "eslint": "^9.31.0",
     "jest": "^30.0.4",

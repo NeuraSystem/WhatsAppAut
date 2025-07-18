@@ -1,4 +1,87 @@
-// src/core/performance/QueryOptimizer.js
+    /**
+     * Set operation mode
+     * @param {string} mode - Operation mode ('full', 'minimal')
+     */
+    setMode(mode) {
+        this.operationMode = mode;
+        
+        if (mode === 'minimal') {
+            logger.info('⚠️ QueryOptimizer: Switching to minimal mode');
+            // Reduce cache sizes for emergency mode
+            this.queryCache.max = Math.floor(this.config.maxCacheSize / 2);
+            this.semanticCache.max = Math.floor(this.config.maxCacheSize / 4);
+        } else {
+            logger.info('✅ QueryOptimizer: Switching to full mode');
+            // Restore full cache sizes
+            this.queryCache.max = this.config.maxCacheSize;
+            this.semanticCache.max = this.config.maxCacheSize / 2;
+        }
+    }
+    
+    /**
+     * Optimize query optimizer itself
+     * @returns {Object} Optimization results
+     */
+    async optimize() {
+        logger.info('🔧 QueryOptimizer: Starting optimization...');
+        
+        const before = {
+            cacheSize: this.queryCache.size,
+            semanticCacheSize: this.semanticCache.size,
+            metrics: { ...this.performanceMetrics }
+        };
+        
+        // Clear low-frequency entries
+        this.optimizeCacheContents();
+        
+        // Reset frequency map for stale entries
+        this.cleanupFrequencyMap();
+        
+        const after = {
+            cacheSize: this.queryCache.size,
+            semanticCacheSize: this.semanticCache.size,
+            metrics: { ...this.performanceMetrics }
+        };
+        
+        logger.info('✅ QueryOptimizer: Optimization completed');
+        
+        return {
+            before,
+            after,
+            entriesRemoved: before.cacheSize - after.cacheSize
+        };
+    }
+    
+    /**
+     * Optimize cache contents
+     * @private
+     */
+    optimizeCacheContents() {
+        // Remove entries that are rarely accessed
+        const lowFrequencyThreshold = 2;
+        
+        for (const [key, value] of this.queryCache.entries()) {
+            const frequency = this.frequencyMap.get(key) || 0;
+            if (frequency < lowFrequencyThreshold) {
+                this.queryCache.delete(key);
+            }
+        }
+    }
+    
+    /**
+     * Cleanup frequency map
+     * @private
+     */
+    cleanupFrequencyMap() {
+        const cutoffTime = Date.now() - (24 * 60 * 60 * 1000); // 24 hours
+        
+        // Keep only recent and frequent entries
+        for (const [query, frequency] of this.frequencyMap.entries()) {
+            if (frequency < 3) {
+                this.frequencyMap.delete(query);
+            }
+        }
+    }// src/core/performance/QueryOptimizer.js
 // Advanced Query Optimization Engine with Semantic Indexing
 
 const logger = require('../../utils/logger');
@@ -283,6 +366,91 @@ class QueryOptimizer {
             processedAt: Date.now(),
             optimizationApplied: true
         };
+    }
+    
+    /**
+     * Set operation mode
+     * @param {string} mode - Operation mode ('full', 'minimal')
+     */
+    setMode(mode) {
+        this.operationMode = mode;
+        
+        if (mode === 'minimal') {
+            logger.info('⚠️ QueryOptimizer: Switching to minimal mode');
+            // Reduce cache sizes for emergency mode
+            this.queryCache.max = Math.floor(this.config.maxCacheSize / 2);
+            this.semanticCache.max = Math.floor(this.config.maxCacheSize / 4);
+        } else {
+            logger.info('✅ QueryOptimizer: Switching to full mode');
+            // Restore full cache sizes
+            this.queryCache.max = this.config.maxCacheSize;
+            this.semanticCache.max = this.config.maxCacheSize / 2;
+        }
+    }
+    
+    /**
+     * Optimize query optimizer itself
+     * @returns {Object} Optimization results
+     */
+    async optimize() {
+        logger.info('🔧 QueryOptimizer: Starting optimization...');
+        
+        const before = {
+            cacheSize: this.queryCache.size,
+            semanticCacheSize: this.semanticCache.size,
+            metrics: { ...this.performanceMetrics }
+        };
+        
+        // Clear low-frequency entries
+        this.optimizeCacheContents();
+        
+        // Reset frequency map for stale entries
+        this.cleanupFrequencyMap();
+        
+        const after = {
+            cacheSize: this.queryCache.size,
+            semanticCacheSize: this.semanticCache.size,
+            metrics: { ...this.performanceMetrics }
+        };
+        
+        logger.info('✅ QueryOptimizer: Optimization completed');
+        
+        return {
+            before,
+            after,
+            entriesRemoved: before.cacheSize - after.cacheSize
+        };
+    }
+    
+    /**
+     * Optimize cache contents
+     * @private
+     */
+    optimizeCacheContents() {
+        // Remove entries that are rarely accessed
+        const lowFrequencyThreshold = 2;
+        
+        for (const [key, value] of this.queryCache.entries()) {
+            const frequency = this.frequencyMap.get(key) || 0;
+            if (frequency < lowFrequencyThreshold) {
+                this.queryCache.delete(key);
+            }
+        }
+    }
+    
+    /**
+     * Cleanup frequency map
+     * @private
+     */
+    cleanupFrequencyMap() {
+        const cutoffTime = Date.now() - (24 * 60 * 60 * 1000); // 24 hours
+        
+        // Keep only recent and frequent entries
+        for (const [query, frequency] of this.frequencyMap.entries()) {
+            if (frequency < 3) {
+                this.frequencyMap.delete(query);
+            }
+        }
     }
 }
 

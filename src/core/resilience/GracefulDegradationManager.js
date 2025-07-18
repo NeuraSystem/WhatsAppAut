@@ -9,22 +9,19 @@ class GracefulDegradationManager extends EventEmitter {
         super();
         
         this.config = {
-            // Service priority hierarchy
             criticalServices: options.criticalServices || ['whatsapp', 'database', 'ai-processing'],
             importantServices: options.importantServices || ['embeddings', 'cache', 'logging'],
             optionalServices: options.optionalServices || ['analytics', 'metrics', 'monitoring'],
             
-            // Degradation thresholds
             degradationThresholds: {
-                memory: options.memoryThreshold || 0.85,
-                cpu: options.cpuThreshold || 0.90,
-                responseTime: options.responseTimeThreshold || 5000,
-                errorRate: options.errorRateThreshold || 0.15
+                memory: options.degradationThresholds?.memory || 0.85,
+                cpu: options.degradationThresholds?.cpu || 0.90,
+                responseTime: options.degradationThresholds?.responseTime || 5000,
+                errorRate: options.degradationThresholds?.errorRate || 0.15
             },
             
-            // Recovery configuration
             recoveryCheckInterval: options.recoveryCheckInterval || 30000,
-            stabilityRequirement: options.stabilityRequirement || 5, // 5 successful checks
+            stabilityRequirement: options.stabilityRequirement || 5,
             
             ...options
         };

@@ -28,14 +28,37 @@ class PerformanceController {
             concurrentTasksExecuted: 0,
             performanceGains: 0
         };
+        
+        this.isInitialized = false;
+        this.emergencyMode = false;
+        this.onPerformanceDegradation = null; // Callback for orchestration
+        
+        // Don't auto-initialize in constructor for orchestration compatibility
+        if (!options.deferInitialization) {
+            this.initialize();
+        }
+    }
 
-        this.initializeComponents();
-        this.startPerformanceMonitoring();
-
-        logger.info('🚀 PerformanceController iniciado con arquitectura unificada', {
-            config: this.config,
-            components: Object.keys(this.components)
-        });
+    /**
+     * Initialize the performance controller
+     * @returns {Promise<boolean>} Success status
+     */
+    async initialize() {
+        try {
+            this.initializeComponents();
+            this.startPerformanceMonitoring();
+            this.isInitialized = true;
+            
+            logger.info('🚀 PerformanceController iniciado con arquitectura unificada', {
+                config: this.config,
+                components: Object.keys(this.components)
+            });
+            
+            return true;
+        } catch (error) {
+            logger.error('❌ Error inicializando PerformanceController:', error);
+            return false;
+        }
     }
 
     /**
@@ -170,6 +193,25 @@ class PerformanceController {
         if (success) {
             const total = this.metrics.averageResponseTime * (this.metrics.totalRequests - 1);
             this.metrics.averageResponseTime = (total + duration) / this.metrics.totalRequests;
+            
+            // Check for performance degradation
+            if (this.metrics.averageResponseTime > this.config.performanceTargets.averageResponseTime) {
+                this.triggerPerformanceDegradation();
+            }
+        }
+    }
+    
+    /**
+     * Trigger performance degradation callback
+     * @private
+     */
+    triggerPerformanceDegradation() {
+        if (this.onPerformanceDegradation && typeof this.onPerformanceDegradation === 'function') {
+            this.onPerformanceDegradation({
+                averageResponseTime: this.metrics.averageResponseTime,
+                target: this.config.performanceTargets.averageResponseTime,
+                degradationLevel: this.metrics.averageResponseTime / this.config.performanceTargets.averageResponseTime
+            });
         }
     }
 
@@ -217,6 +259,110 @@ class PerformanceController {
     }
 
     /**
+     * Optimizes operation for execution
+     * @param {Function} operation - Operation to optimize
+     * @param {Object} context - Execution context
+     * @returns {Function} Optimized operation
+     */
+    async optimizeOperation(operation, context = {}) {
+        if (!this.isInitialized) {
+            return operation;
+        }
+        
+        // Apply performance optimizations based on context
+        return async (ctx) => {
+            // Memory optimization
+            if (this.components.memoryManager) {
+                await this.components.memoryManager.optimizeForOperation();
+            }
+            
+            // Execute the operation
+            return await operation(ctx);
+        };
+    }
+    
+    /**
+     * Activate emergency mode
+     */
+    activateEmergencyMode() {
+        this.emergencyMode = true;
+        logger.warn('⚠️ PerformanceController: Emergency mode activated');
+        
+        // Disable non-critical optimizations
+        if (this.components.queryOptimizer) {
+            this.components.queryOptimizer.setMode('minimal');
+        }
+    }
+    
+    /**
+     * Deactivate emergency mode
+     */
+    deactivateEmergencyMode() {
+        this.emergencyMode = false;
+        logger.info('✅ PerformanceController: Emergency mode deactivated');
+        
+        // Re-enable optimizations
+        if (this.components.queryOptimizer) {
+            this.components.queryOptimizer.setMode('full');
+        }
+    }
+    
+    /**
+     * Force system optimization
+     * @returns {Promise<Object>} Optimization results
+     */
+    async optimize() {
+        logger.info('🔧 PerformanceController: Iniciando optimización forzada...');
+        
+        const results = {
+            memoryCleanup: null,
+            cacheOptimization: null,
+            concurrentOptimization: null
+        };
+        
+        try {
+            // Memory cleanup
+            if (this.components.memoryManager) {
+                results.memoryCleanup = await this.components.memoryManager.forceCleanup();
+            }
+            
+            // Cache optimization
+            if (this.components.queryOptimizer) {
+                results.cacheOptimization = await this.components.queryOptimizer.optimize();
+            }
+            
+            // Concurrent processor optimization
+            if (this.components.concurrentProcessor) {
+                results.concurrentOptimization = await this.components.concurrentProcessor.optimize();
+            }
+            
+            logger.info('✅ PerformanceController: Optimización completada');
+            return results;
+            
+        } catch (error) {
+            logger.error('❌ PerformanceController: Error durante optimización:', error);
+            throw error;
+        }
+    }
+    
+    /**
+     * Get status for orchestration
+     * @returns {Promise<Object>} Status information
+     */
+    async getStatus() {
+        return {
+            isInitialized: this.isInitialized,
+            emergencyMode: this.emergencyMode,
+            metrics: this.getPerformanceMetrics(),
+            componentsStatus: {
+                queryOptimizer: !!this.components.queryOptimizer,
+                memoryManager: !!this.components.memoryManager,
+                concurrentProcessor: !!this.components.concurrentProcessor
+            }
+        };
+    }
+
+    /**
      * Graceful shutdown
      */
     async shutdown() {
@@ -233,6 +379,8 @@ class PerformanceController {
         }
         
         await Promise.all(shutdownPromises);
+        
+        this.isInitialized = false;
         
         logger.info('✅ PerformanceController shutdown completed');
     }

@@ -1,0 +1,11 @@
+{
+  "name": "agent-service",
+  "version": "1.0.0",
+  "description": "Core AI agent logic",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+  }
+}

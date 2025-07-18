@@ -9,23 +9,15 @@ class AdvancedCircuitBreaker extends EventEmitter {
         super();
         
         this.config = {
-            // Failure threshold configuration
             failureThreshold: options.failureThreshold || 5,
             successThreshold: options.successThreshold || 3,
             timeout: options.timeout || 30000,
-            
-            // Adaptive threshold configuration
             enableAdaptiveThreshold: options.enableAdaptiveThreshold !== false,
-            adaptiveWindow: options.adaptiveWindow || 300000, // 5 minutes
-            
-            // Response time monitoring
+            adaptiveWindow: options.adaptiveWindow || 300000,
             responseTimeThreshold: options.responseTimeThreshold || 5000,
             enableResponseTimeCircuit: options.enableResponseTimeCircuit !== false,
-            
-            // Recovery configuration
             recoveryTimeout: options.recoveryTimeout || 10000,
             halfOpenMaxAttempts: options.halfOpenMaxAttempts || 3,
-            
             ...options
         };
 

@@ -400,6 +400,58 @@ class ConcurrentProcessor {
     }
 
     /**
+     * Optimize concurrent processor
+     * @returns {Object} Optimization results
+     */
+    async optimize() {
+        logger.info('🔧 ConcurrentProcessor: Starting optimization...');
+        
+        const before = {
+            metrics: { ...this.metrics },
+            queueLength: this.taskQueue.length,
+            activeWorkers: this.activeWorkers.size
+        };
+        
+        // Clear completed task references
+        this.completedTasks.clear();
+        
+        // Reset worker statistics
+        this.workerPool.forEach(worker => {
+            if (worker.status === 'idle') {
+                worker.tasksCompleted = 0;
+                worker.lastUsed = Date.now();
+            }
+        });
+        
+        // Reset metrics (keep running totals)
+        const totalTasks = this.metrics.totalTasks;
+        const completedTasks = this.metrics.completedTasks;
+        
+        this.metrics = {
+            totalTasks,
+            completedTasks,
+            failedTasks: 0,
+            averageExecutionTime: 0,
+            workerUtilization: 0,
+            queueLength: this.taskQueue.length
+        };
+        
+        const after = {
+            metrics: { ...this.metrics },
+            queueLength: this.taskQueue.length,
+            activeWorkers: this.activeWorkers.size
+        };
+        
+        logger.info('✅ ConcurrentProcessor: Optimization completed');
+        
+        return {
+            before,
+            after,
+            optimizationsApplied: ['cleared_completed_tasks', 'reset_worker_stats', 'reset_metrics']
+        };
+    }
+
+    /**
      * Graceful shutdown
      */
     async shutdown() {

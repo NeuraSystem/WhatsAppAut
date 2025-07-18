@@ -2,54 +2,57 @@
 
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
-const CircuitBreaker = require('opossum');
 
 const config = require('./utils/config');
 const { initializeDatabase } = require('./database/pg');
 const { isChatPaused } = require('./utils/chatState');
 const logger = require('./utils/logger');
 const { SalvaCellAgentExecutor, OllamaError } = require('./services/agentExecutor');
+const orchestrationController = require('./core/OrchestrationController');
+const { registerService } = require('./services/serviceRegistry');
 
 class SalvaCellPureOrchestrator {
     constructor() {
         this.client = null;
         this.agentExecutor = null;
         this.isReady = false;
-        this.adminTimers = new Map(); // Inicializar adminTimers
+        this.adminTimers = new Map();
 
         this.metrics = {
             totalMessages: 0,
             orchestratorMessages: 0,
             successfulResponses: 0,
             errors: 0,
-            circuitBreakerOpen: 0,
             startTime: Date.now(),
             averageResponseTime: 0
         };
 
-        this.agentBreaker = null;
-
-        logger.info('🤖 SalvaCellPureOrchestrator inicializando...');
+        logger.info('🏢 SalvaCellPureOrchestrator inicializando con arquitectura unificada...');
     }
 
     async initialize() {
         try {
             logger.info('🗄️ Inicializando base de datos...');
-            try {
-                await initializeDatabase();
-                logger.info('✅ Base de datos inicializada correctamente');
-            } catch (dbError) {
-                logger.error('❌ Error con la base de datos, continuando sin ella:', dbError.message);
-                // Continuar sin base de datos
-            }
+            await initializeDatabase();
+            logger.info('✅ Base de datos inicializada correctamente');
             
+            // Inicializar el sistema de orquestación unificado (Performance + Resilience)
+            logger.info('🎵 Inicializando sistema de orquestación unificado...');
+            const orchestrationSuccess = await orchestrationController.initialize();
+            if (!orchestrationSuccess) {
+                throw new Error('Error inicializando sistema de orquestación');
+            }
+            logger.info('✅ Sistema de orquestación unificado inicializado correctamente');
+
             await this.initializePureOrchestrator();
             await this.initializeWhatsAppClient();
             this.setupEventHandlers();
-            this.setupCircuitBreaker();
+            
             logger.info('🤖 SalvaCellPureOrchestrator listo.');
         } catch (error) {
             logger.error('🤖 Error inicializando bot puro:', error);
+            // En caso de un error fatal en el inicio, apagar el sistema de orquestación
+            await orchestrationController.shutdown();
             throw error;
         }
     }
@@ -57,8 +60,20 @@ class SalvaCellPureOrchestrator {
     async initializePureOrchestrator() {
         try {
             this.agentExecutor = new SalvaCellAgentExecutor(config.orchestrator);
-            await this.agentExecutor.initialize(); // Call the new async initializer
-            logger.info('🎭 SalvaCellAgentExecutor configurado.');
+            await this.agentExecutor.initialize();
+            // Registrar el agentExecutor como un servicio monitoreable
+            registerService('agentExecutor', this.agentExecutor);
+            
+            // Registrar el cliente WhatsApp
+            registerService('whatsappClient', {
+                healthCheck: async () => this.isReady,
+                initialize: async () => {
+                    await this.initializeWhatsAppClient();
+                    return true;
+                }
+            });
+            
+            logger.info('🎭 SalvaCellAgentExecutor configurado y registrado.');
         } catch (error) {
             logger.error('🎭 Error inicializando AgentExecutor:', error);
             throw error;
@@ -74,24 +89,6 @@ class SalvaCellPureOrchestrator {
             }
         });
         logger.info('📱 Cliente WhatsApp inicializado');
-    }
-
-    setupCircuitBreaker() {
-        const options = {
-            timeout: config.bot.responseTimeout,
-            errorThresholdPercentage: 50,
-            resetTimeout: 30000
-        };
-        this.agentBreaker = new CircuitBreaker(async (userMessage) => this.agentExecutor.execute(userMessage), options);
-
-        this.agentBreaker.on('open', () => {
-            logger.warn('Circuit Breaker ABIERTO. El AgentExecutor está fallando.');
-            this.metrics.circuitBreakerOpen++;
-        });
-        this.agentBreaker.on('close', () => logger.info('Circuit Breaker CERRADO. El AgentExecutor se ha recuperado.'));
-        this.agentBreaker.fallback(() => {
-            throw new Error('CIRCUIT_BREAKER_OPEN');
-        });
     }
 
     setupEventHandlers() {
@@ -110,6 +107,11 @@ class SalvaCellPureOrchestrator {
         this.client.on('disconnected', (reason) => {
             logger.warn(`📱 WhatsApp desconectado: ${reason}`);
             this.isReady = false;
+            // Reportar la desconexión como una falla del servicio de WhatsApp
+            const resilienceController = orchestrationController.getResilienceController();
+            if (resilienceController) {
+                resilienceController.reportFailure('whatsappClient', new Error(reason));
+            }
         });
 
         process.on('SIGINT', this.shutdown.bind(this));
@@ -119,6 +121,16 @@ class SalvaCellPureOrchestrator {
     async handleIncomingMessage(message) {
         const startTime = Date.now();
         this.metrics.totalMessages++;
+
+        // --- Integración de Graceful Degradation ---
+        const gracefulDegradationManager = orchestrationController.getGracefulDegradationManager();
+        if (gracefulDegradationManager && gracefulDegradationManager.isDegraded()) {
+            const level = gracefulDegradationManager.getCurrentLevel();
+            logger.warn(`Sistema en modo degradado (Nivel ${level.level}: ${level.mode}). Respondiendo con mensaje de mantenimiento.`);
+            await message.reply(level.userMessage);
+            return;
+        }
+        // --- Fin de la integración ---
 
         try {
             const chat = await message.getChat();
@@ -133,11 +145,27 @@ class SalvaCellPureOrchestrator {
             }
 
             this.metrics.orchestratorMessages++;
-            const response = await this.agentBreaker.fire(userMessage);
+            
+            // --- Ejecución con Orquestación Unificada (Performance + Resilience) ---
+            const result = await orchestrationController.executeOperation(
+                async (context) => {
+                    return await this.agentExecutor.execute(context.userMessage);
+                },
+                { userMessage, from: message.from }
+            );
+            
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            
+            const response = result.result;
+            // --- Fin de la ejecución unificada ---
+
             await message.reply(response);
 
             this.recordSuccess(Date.now() - startTime);
             logger.info(`📤 Respuesta (${Date.now() - startTime}ms): "${response}"`);
+            logger.debug(`📊 Métricas de operación:`, result.metrics);
         } catch (error) {
             await this.handleMessageError(error, message, Date.now() - startTime);
         }
@@ -147,14 +175,22 @@ class SalvaCellPureOrchestrator {
         this.metrics.errors++;
         let errorResponse = 'Disculpa, hay un problema técnico momentáneo. Intenta de nuevo más tarde.';
 
-        if (error.message === 'CIRCUIT_BREAKER_OPEN') {
+        // El AdvancedCircuitBreaker lanza un error con nombre 'OpenCircuitError'
+        if (error.name === 'OpenCircuitError') {
             errorResponse = 'El sistema está sobrecargado. Por favor, espera un momento.';
             logger.warn(`Circuit Breaker abierto para ${message.from} (${responseTime}ms)`);
         } else if (error instanceof OllamaError) {
             errorResponse = 'No puedo conectarme con el modelo de lenguaje en este momento.';
             logger.error(`Error de Ollama para ${message.from}:`, error);
+            // Reportar la falla al sistema de resiliencia
+            resilienceController.reportFailure('agentExecutor', error);
         } else {
             logger.error(`Error procesando mensaje de ${message.from}:`, error);
+            // Reportar la falla al sistema de orquestación
+            const resilienceController = orchestrationController.getResilienceController();
+            if (resilienceController) {
+                resilienceController.reportFailure('agentExecutor', error);
+            }
         }
 
         try {
@@ -168,13 +204,15 @@ class SalvaCellPureOrchestrator {
         this.metrics.successfulResponses++;
         const total = this.metrics.averageResponseTime * (this.metrics.successfulResponses - 1) + responseTime;
         this.metrics.averageResponseTime = total / this.metrics.successfulResponses;
-        logger.info('Métricas actualizadas', this.getMetrics());
     }
 
-    getMetrics() {
+    async getMetrics() {
         const uptime = Date.now() - this.metrics.startTime;
+        const systemStatus = await orchestrationController.getSystemStatus();
+        
         return {
             ...this.metrics,
+            orchestration: systemStatus, // Métricas completas del sistema unificado
             uptime: `${(uptime / 1000 / 60).toFixed(2)} minutos`,
             successRate: this.metrics.totalMessages > 0 ? (this.metrics.successfulResponses / this.metrics.totalMessages) : 0,
         };
@@ -192,15 +230,21 @@ class SalvaCellPureOrchestrator {
 
     async shutdown() {
         logger.info('🤖 Cerrando bot...');
+        
+        // Apagar el sistema de orquestación unificado
+        await orchestrationController.shutdown();
+        
         if (this.client) {
             this.client.removeAllListeners();
             await this.client.destroy();
         }
+        
         for (const timer of this.adminTimers.values()) {
             clearTimeout(timer);
         }
         this.adminTimers.clear();
-        logger.info('🤖 Bot cerrado exitosamente.');
+        
+        logger.info('✅ Bot cerrado exitosamente con arquitectura unificada.');
         process.exit(0);
     }
 }

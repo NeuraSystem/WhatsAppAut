@@ -337,9 +337,42 @@ class MemoryManager {
     }
 
     /**
+     * Optimize memory for specific operation
+     */
+    async optimizeForOperation() {
+        const currentUsage = this.getCurrentMemoryUsage();
+        
+        if (currentUsage > this.config.maxMemoryUsage * 0.8) {
+            logger.debug('🔧 Optimizing memory before operation');
+            this.performIntelligentCleanup();
+        }
+    }
+    
+    /**
+     * Force cleanup with results
+     * @returns {Object} Cleanup results
+     */
+    async forceCleanup() {
+        const before = this.getCurrentMemoryUsage();
+        const beforeMetrics = { ...this.memoryMetrics };
+        
+        this.performIntelligentCleanup();
+        
+        const after = this.getCurrentMemoryUsage();
+        
+        return {
+            beforeUsage: before,
+            afterUsage: after,
+            memoryFreed: before - after,
+            beforeMetrics,
+            afterMetrics: { ...this.memoryMetrics }
+        };
+    }
+
+    /**
      * Cleanup on shutdown
      */
-    shutdown() {
+    async shutdown() {
         if (this.monitoringTimer) {
             clearInterval(this.monitoringTimer);
         }
