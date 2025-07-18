@@ -4,7 +4,7 @@
 // CLIENT HISTORY SEARCH ENGINE - SOLUCIÓN 8 SIMPLIFICADA
 // Motor de búsqueda especializado en historial de clientes por número de teléfono
 
-const logger = require('../utils/logger');
+const logger = require("../utils/logger");
 
 /**
  * CLIENT HISTORY SEARCH ENGINE
@@ -18,371 +18,374 @@ const logger = require('../utils/logger');
  * - Integración con sistema de memoria conversacional existente
  */
 class ClientHistorySearchEngine {
-    constructor(options = {}, conversationMemory) {
-        this.config = {
-            // Límites de búsqueda
-            defaultHistoryLimit: options.defaultHistoryLimit || 50,
-            maxHistoryLimit: options.maxHistoryLimit || 200,
+  constructor(options = {}, conversationMemory) {
+    this.config = {
+      // Límites de búsqueda
+      defaultHistoryLimit: options.defaultHistoryLimit || 50,
+      maxHistoryLimit: options.maxHistoryLimit || 200,
 
-            // Búsqueda alternativa
-            enableAlternativeSearch: options.enableAlternativeSearch !== false,
+      // Búsqueda alternativa
+      enableAlternativeSearch: options.enableAlternativeSearch !== false,
 
-            // Análisis de perfil
-            enableProfileAnalysis: options.enableProfileAnalysis !== false,
+      // Análisis de perfil
+      enableProfileAnalysis: options.enableProfileAnalysis !== false,
 
-            // Cache de búsquedas
-            enableSearchCache: options.enableSearchCache !== false,
-            cacheExpiration: options.cacheExpiration || 300000 // 5 minutos
-        };
+      // Cache de búsquedas
+      enableSearchCache: options.enableSearchCache !== false,
+      cacheExpiration: options.cacheExpiration || 300000, // 5 minutos
+    };
 
-        // Cache de búsquedas recientes
-        this.searchCache = new Map();
+    // Cache de búsquedas recientes
+    this.searchCache = new Map();
 
-        // Métricas de búsqueda
-        this.searchMetrics = {
-            totalSearches: 0,
-            successfulSearches: 0,
-            cacheHits: 0,
-            alternativeSearches: 0,
-            emptyResults: 0
-        };
+    // Métricas de búsqueda
+    this.searchMetrics = {
+      totalSearches: 0,
+      successfulSearches: 0,
+      cacheHits: 0,
+      alternativeSearches: 0,
+      emptyResults: 0,
+    };
 
-        // Referencia al sistema de memoria conversacional
-        this.conversationMemory = conversationMemory;
+    // Referencia al sistema de memoria conversacional
+    this.conversationMemory = conversationMemory;
 
-        logger.info('🔍 ClientHistorySearchEngine inicializado:', {
-            defaultLimit: this.config.defaultHistoryLimit,
-            enableAlternatives: this.config.enableAlternativeSearch,
-            enableProfile: this.config.enableProfileAnalysis
-        });
+    logger.info("🔍 ClientHistorySearchEngine inicializado:", {
+      defaultLimit: this.config.defaultHistoryLimit,
+      enableAlternatives: this.config.enableAlternativeSearch,
+      enableProfile: this.config.enableProfileAnalysis,
+    });
+  }
+
+  /**
+   * BÚSQUEDA PRINCIPAL DE HISTORIAL DE CLIENTE
+   * Punto de entrada principal para buscar historial completo de un cliente
+   */
+  async searchClientHistory(clientIdentifier, options = {}) {
+    const startTime = Date.now();
+    this.searchMetrics.totalSearches++;
+
+    try {
+      // 1. NORMALIZAR IDENTIFICADOR DE CLIENTE
+      const normalizedClientId =
+        this.normalizeClientIdentifier(clientIdentifier);
+
+      // 2. VERIFICAR CACHE
+      if (this.config.enableSearchCache) {
+        const cached = this.getCachedResult(normalizedClientId, options);
+        if (cached) {
+          this.searchMetrics.cacheHits++;
+          return cached;
+        }
+      }
+
+      // 3. BÚSQUEDA DIRECTA
+      const directResults = await this.searchByClientId(
+        normalizedClientId,
+        options,
+      );
+
+      // 4. BÚSQUEDA ALTERNATIVA SI NO HAY RESULTADOS
+      let allResults = directResults;
+      if (directResults.length === 0 && this.config.enableAlternativeSearch) {
+        this.searchMetrics.alternativeSearches++;
+        allResults = await this.searchByAlternativeIdentifiers(
+          clientIdentifier,
+          options,
+        );
+      }
+
+      // 5. FORMATEAR HISTORIAL DEL CLIENTE
+      const clientHistory = this.formatClientHistory(
+        allResults,
+        normalizedClientId,
+        options,
+      );
+
+      // 6. CACHEAR RESULTADO
+      if (this.config.enableSearchCache) {
+        this.cacheResult(normalizedClientId, options, clientHistory);
+      }
+
+      const duration = Date.now() - startTime;
+
+      if (clientHistory.totalInteractions > 0) {
+        this.searchMetrics.successfulSearches++;
+      } else {
+        this.searchMetrics.emptyResults++;
+      }
+
+      logger.debug(
+        `🔍 Búsqueda de cliente completada: ${normalizedClientId} (${duration}ms, ${clientHistory.totalInteractions} resultados)`,
+      );
+
+      return clientHistory;
+    } catch (error) {
+      logger.error(
+        `Error buscando historial de cliente ${clientIdentifier}:`,
+        error,
+      );
+      return this.getEmptyClientHistory(clientIdentifier, "search_error");
+    }
+  }
+
+  /**
+   * NORMALIZACIÓN DE IDENTIFICADOR DE CLIENTE
+   * Convierte diferentes formatos de número a formato estándar mexicano
+   */
+  normalizeClientIdentifier(identifier) {
+    if (!identifier) return null;
+
+    // Si es un objeto con propiedad id, usamos ese valor
+    if (typeof identifier === "object" && identifier !== null) {
+      if (identifier.id) {
+        identifier = identifier.id;
+      } else if (identifier.phone) {
+        identifier = identifier.phone;
+      } else if (identifier.telefono) {
+        identifier = identifier.telefono;
+      } else if (identifier.number) {
+        identifier = identifier.number;
+      } else {
+        // Si es un objeto sin propiedades reconocidas, lo convertimos a string
+        identifier = String(identifier);
+      }
     }
 
-    /**
-     * BÚSQUEDA PRINCIPAL DE HISTORIAL DE CLIENTE
-     * Punto de entrada principal para buscar historial completo de un cliente
-     */
-    async searchClientHistory(clientIdentifier, options = {}) {
-        const startTime = Date.now();
-        this.searchMetrics.totalSearches++;
+    // Asegurarse de que sea string
+    let phone = String(identifier).trim();
 
-        try {
-            // 1. NORMALIZAR IDENTIFICADOR DE CLIENTE
-            const normalizedClientId = this.normalizeClientIdentifier(clientIdentifier);
+    // Eliminar todo lo que no sea número
+    phone = phone.replace(/\D/g, "");
 
-            // 2. VERIFICAR CACHE
-            if (this.config.enableSearchCache) {
-                const cached = this.getCachedResult(normalizedClientId, options);
-                if (cached) {
-                    this.searchMetrics.cacheHits++;
-                    return cached;
-                }
-            }
-
-            // 3. BÚSQUEDA DIRECTA
-            const directResults = await this.searchByClientId(
-                normalizedClientId,
-                options
-            );
-
-            // 4. BÚSQUEDA ALTERNATIVA SI NO HAY RESULTADOS
-            let allResults = directResults;
-            if (directResults.length === 0 && this.config.enableAlternativeSearch) {
-                this.searchMetrics.alternativeSearches++;
-                allResults = await this.searchByAlternativeIdentifiers(
-                    clientIdentifier,
-                    options
-                );
-            }
-
-            // 5. FORMATEAR HISTORIAL DEL CLIENTE
-            const clientHistory = this.formatClientHistory(
-                allResults,
-                normalizedClientId,
-                options
-            );
-
-            // 6. CACHEAR RESULTADO
-            if (this.config.enableSearchCache) {
-                this.cacheResult(normalizedClientId, options, clientHistory);
-            }
-
-            const duration = Date.now() - startTime;
-
-            if (clientHistory.totalInteractions > 0) {
-                this.searchMetrics.successfulSearches++;
-            } else {
-                this.searchMetrics.emptyResults++;
-            }
-
-            logger.debug(
-                `🔍 Búsqueda de cliente completada: ${normalizedClientId} (${duration}ms, ${clientHistory.totalInteractions} resultados)`
-            );
-
-            return clientHistory;
-        } catch (error) {
-            logger.error(
-                `Error buscando historial de cliente ${clientIdentifier}:`,
-                error
-            );
-            return this.getEmptyClientHistory(clientIdentifier, 'search_error');
-        }
+    // Si empieza con 52 (código de país México), lo quitamos
+    if (phone.startsWith("52")) {
+      phone = phone.substring(2);
     }
 
-    /**
-     * NORMALIZACIÓN DE IDENTIFICADOR DE CLIENTE
-     * Convierte diferentes formatos de número a formato estándar mexicano
-     */
-    normalizeClientIdentifier(identifier) {
-        if (!identifier) return null;
-
-        // Si es un objeto con propiedad id, usamos ese valor
-        if (typeof identifier === 'object' && identifier !== null) {
-            if (identifier.id) {
-                identifier = identifier.id;
-            } else if (identifier.phone) {
-                identifier = identifier.phone;
-            } else if (identifier.telefono) {
-                identifier = identifier.telefono;
-            } else if (identifier.number) {
-                identifier = identifier.number;
-            } else {
-                // Si es un objeto sin propiedades reconocidas, lo convertimos a string
-                identifier = String(identifier);
-            }
-        }
-
-        // Asegurarse de que sea string
-        let phone = String(identifier).trim();
-
-        // Eliminar todo lo que no sea número
-        phone = phone.replace(/\D/g, '');
-
-        // Si empieza con 52 (código de país México), lo quitamos
-        if (phone.startsWith('52')) {
-            phone = phone.substring(2);
-        }
-
-        // Si tiene 10 dígitos, asumimos que es un número mexicano sin lada
-        if (phone.length === 10) {
-            // Verificar que el primer dígito sea de una lada válida (2-9)
-            if (/^[2-9]\d{9}$/.test(phone)) {
-                return `52${phone}`; // Agregar prefijo de México
-            }
-        }
-
-        // Si tiene 12 dígitos y empieza con 52, lo dejamos igual
-        if (phone.length === 12 && phone.startsWith('52')) {
-            return phone;
-        }
-
-        // Si tiene 10 dígitos y no pasó la validación anterior, intentamos con lada 55 (CDMX)
-        if (phone.length === 10) {
-            return `52${phone}`;
-        }
-
-        // Si no cumple con ningún formato conocido, devolvemos el valor original normalizado
-        return phone || 'unknown';
+    // Si tiene 10 dígitos, asumimos que es un número mexicano sin lada
+    if (phone.length === 10) {
+      // Verificar que el primer dígito sea de una lada válida (2-9)
+      if (/^[2-9]\d{9}$/.test(phone)) {
+        return `52${phone}`; // Agregar prefijo de México
+      }
     }
 
-    /**
-     * BÚSQUEDA ALTERNATIVA POR VARIACIONES
-     * Busca usando diferentes variaciones del identificador
-     */
-    async searchByAlternativeIdentifiers(originalIdentifier, options) {
-        const alternatives = this.generateAlternativeIdentifiers(originalIdentifier);
-        let allResults = [];
-
-        for (const altId of alternatives) {
-            try {
-                const results = await this.searchByClientId(altId, {
-                    ...options,
-                    limit: Math.max(20, options.limit || 20) // Límite menor para alternativas
-                });
-
-                if (results.length > 0) {
-                    allResults = allResults.concat(results);
-                    // Si encontramos resultados, podemos parar la búsqueda alternativa
-                    break;
-                }
-            } catch (error) {
-                logger.debug(
-                    `Búsqueda alternativa falló para ${altId}:`,
-                    error.message
-                );
-            }
-        }
-
-        // Remover duplicados basados en timestamp + contenido
-        return this.removeDuplicateResults(allResults);
+    // Si tiene 12 dígitos y empieza con 52, lo dejamos igual
+    if (phone.length === 12 && phone.startsWith("52")) {
+      return phone;
     }
 
-    /**
-     * GENERAR IDENTIFICADORES ALTERNATIVOS
-     * Crea variaciones del número para búsqueda flexible
-     */
-    generateAlternativeIdentifiers(identifier) {
-        const base = String(identifier).replace(/[^\d]/g, '');
-        const alternatives = new Set();
-
-        // Variaciones estándar
-        alternatives.add(base);
-
-        // Con código de país
-        if (base.length === 10) {
-            alternatives.add(`52${base}`);
-            alternatives.add(`+52${base}`);
-        }
-
-        // Formatos WhatsApp
-        alternatives.add(`1${base}`);
-        if (base.length === 10) {
-            alternatives.add(`152${base}`);
-        }
-
-        // Sin código de país si lo tiene
-        if (base.startsWith('52') && base.length === 12) {
-            alternatives.add(base.substring(2));
-        }
-
-        // Con + inicial
-        alternatives.add(`+${base}`);
-
-        // Remover identificador original para evitar duplicado
-        alternatives.delete(base);
-
-        return Array.from(alternatives);
+    // Si tiene 10 dígitos y no pasó la validación anterior, intentamos con lada 55 (CDMX)
+    if (phone.length === 10) {
+      return `52${phone}`;
     }
 
-    /**
-     * FORMATEAR HISTORIAL DEL CLIENTE
-     * Organiza resultados en formato estructurado para análisis
-     */
-    formatClientHistory(results, clientId, options = {}) {
-        if (!results || results.length === 0) {
-            return this.getEmptyClientHistory(clientId, 'no_results');
-        }
+    // Si no cumple con ningún formato conocido, devolvemos el valor original normalizado
+    return phone || "unknown";
+  }
 
-        // Ordenar por timestamp (más reciente primero)
-        const sortedResults = results.sort((a, b) => {
-            const timestampA = new Date(a.metadata.timestamp).getTime();
-            const timestampB = new Date(b.metadata.timestamp).getTime();
-            return timestampB - timestampA;
+  /**
+   * BÚSQUEDA ALTERNATIVA POR VARIACIONES
+   * Busca usando diferentes variaciones del identificador
+   */
+  async searchByAlternativeIdentifiers(originalIdentifier, options) {
+    const alternatives =
+      this.generateAlternativeIdentifiers(originalIdentifier);
+    let allResults = [];
+
+    for (const altId of alternatives) {
+      try {
+        const results = await this.searchByClientId(altId, {
+          ...options,
+          limit: Math.max(20, options.limit || 20), // Límite menor para alternativas
         });
 
-        // Análisis de perfil si está habilitado
-        let clientProfile = null;
-        if (this.config.enableProfileAnalysis) {
-            clientProfile = this.extractClientProfile(sortedResults);
+        if (results.length > 0) {
+          allResults = allResults.concat(results);
+          // Si encontramos resultados, podemos parar la búsqueda alternativa
+          break;
         }
-
-        // Agrupar por tipo de intención
-        const intentBreakdown = this.groupByIntent(sortedResults);
-
-        // Análisis temporal
-        const temporalAnalysis = this.analyzeTemporalPatterns(sortedResults);
-
-        return {
-            clientId: clientId,
-            totalInteractions: results.length,
-            lastInteraction: sortedResults[0]?.metadata.timestamp,
-            firstInteraction: sortedResults[sortedResults.length - 1]?.metadata.timestamp,
-            clientProfile,
-            intentBreakdown,
-            temporalAnalysis,
-            recentHistory: sortedResults.slice(0, Math.min(10, sortedResults.length)),
-            fullHistory: sortedResults,
-            searchMetadata: {
-                searchTimestamp: Date.now(),
-                searchStrategy: 'client_history_comprehensive',
-                filtersApplied: this.getAppliedFilters(options),
-                resultSource: 'chromadb_direct'
-            }
-        };
+      } catch (error) {
+        logger.debug(
+          `Búsqueda alternativa falló para ${altId}:`,
+          error.message,
+        );
+      }
     }
 
-    /**
-     * EXTRAER PERFIL DEL CLIENTE
-     * Analiza el historial para crear perfil del cliente
-     */
-    extractClientProfile(history) {
-        const profile = {
-            // Preferencias de dispositivos
-            preferredDevices: new Set(),
-            deviceBrands: new Set(),
+    // Remover duplicados basados en timestamp + contenido
+    return this.removeDuplicateResults(allResults);
+  }
 
-            // Servicios comunes
-            commonServices: new Set(),
-            serviceTypes: new Set(),
+  /**
+   * GENERAR IDENTIFICADORES ALTERNATIVOS
+   * Crea variaciones del número para búsqueda flexible
+   */
+  generateAlternativeIdentifiers(identifier) {
+    const base = String(identifier).replace(/[^\d]/g, "");
+    const alternatives = new Set();
 
-            // Información comercial
-            priceRanges: [],
-            averagePrice: 0,
-            priceInteractions: 0,
+    // Variaciones estándar
+    alternatives.add(base);
 
-            // Patrones de comunicación
-            communicationPattern: {
-                averageMessageLength: 0,
-                totalMessages: history.length,
-                responseTypes: new Set()
-            },
+    // Con código de país
+    if (base.length === 10) {
+      alternatives.add(`52${base}`);
+      alternatives.add(`+52${base}`);
+    }
 
-            // Indicadores de lealtad
-            loyaltyIndicators: {
-                repeatCustomer: history.length > 1,
-                totalInteractions: history.length,
-                timespan: null,
-                satisfactionLevel: 0
-            },
+    // Formatos WhatsApp
+    alternatives.add(`1${base}`);
+    if (base.length === 10) {
+      alternatives.add(`152${base}`);
+    }
 
-            // Metadatos de análisis
-            analysisMetadata: {
-                profileGenerated: new Date().toISOString(),
-                dataPoints: history.length,
-                confidenceScore: this.calculateProfileConfidence(history)
-            }
-        };
+    // Sin código de país si lo tiene
+    if (base.startsWith("52") && base.length === 12) {
+      alternatives.add(base.substring(2));
+    }
 
-        let totalSatisfaction = 0;
-        let satisfactionCount = 0;
-        let totalMessageLength = 0;
+    // Con + inicial
+    alternatives.add(`+${base}`);
 
-        // Analizar cada interacción
-        history.forEach((item) => {
-            const metadata = item.metadata;
+    // Remover identificador original para evitar duplicado
+    alternatives.delete(base);
 
-            // Dispositivos
-            if (metadata.device_mentioned) {
-                profile.preferredDevices.add(metadata.device_mentioned);
-            }
-            if (metadata.device_brand) {
-                profile.deviceBrands.add(metadata.device_brand);
-            }
+    return Array.from(alternatives);
+  }
 
-            // Servicios
-            if (metadata.service_mentioned) {
-                profile.commonServices.add(metadata.service_mentioned);
-            }
-            if (metadata.service_type) {
-                profile.serviceTypes.add(metadata.service_type);
-            }
+  /**
+   * FORMATEAR HISTORIAL DEL CLIENTE
+   * Organiza resultados en formato estructurado para análisis
+   */
+  formatClientHistory(results, clientId, options = {}) {
+    if (!results || results.length === 0) {
+      return this.getEmptyClientHistory(clientId, "no_results");
+    }
 
-            // Precios
-            if (metadata.price_quoted && !isNaN(metadata.price_quoted)) {
-                const price = Number(metadata.price_quoted);
-                profile.priceRanges.push(price);
-                profile.priceInteractions++;
-            }
+    // Ordenar por timestamp (más reciente primero)
+    const sortedResults = results.sort((a, b) => {
+      const timestampA = new Date(a.metadata.timestamp).getTime();
+      const timestampB = new Date(b.metadata.timestamp).getTime();
+      return timestampB - timestampA;
+    });
 
-            // Comunicación
-            if (metadata.message_length) {
-                totalMessageLength += metadata.message_length;
-            }
-            if (metadata.response_type) {
-                profile.communicationPattern.responseTypes.add(metadata.response_type);
-            }
+    // Análisis de perfil si está habilitado
+    let clientProfile = null;
+    if (this.config.enableProfileAnalysis) {
+      clientProfile = this.extractClientProfile(sortedResults);
+    }
 
-            // Satisfacción
-            if (metadata.satisfaction_level) {
+    // Agrupar por tipo de intención
+    const intentBreakdown = this.groupByIntent(sortedResults);
+
+    // Análisis temporal
+    const temporalAnalysis = this.analyzeTemporalPatterns(sortedResults);
+
+    return {
+      clientId: clientId,
+      totalInteractions: results.length,
+      lastInteraction: sortedResults[0]?.metadata.timestamp,
+      firstInteraction:
+        sortedResults[sortedResults.length - 1]?.metadata.timestamp,
+      clientProfile,
+      intentBreakdown,
+      temporalAnalysis,
+      recentHistory: sortedResults.slice(0, Math.min(10, sortedResults.length)),
+      fullHistory: sortedResults,
+      searchMetadata: {
+        searchTimestamp: Date.now(),
+        searchStrategy: "client_history_comprehensive",
+        filtersApplied: this.getAppliedFilters(options),
+        resultSource: "chromadb_direct",
+      },
+    };
+  }
+
+  /**
+   * EXTRAER PERFIL DEL CLIENTE
+   * Analiza el historial para crear perfil del cliente
+   */
+  extractClientProfile(history) {
+    const profile = {
+      // Preferencias de dispositivos
+      preferredDevices: new Set(),
+      deviceBrands: new Set(),
+
+      // Servicios comunes
+      commonServices: new Set(),
+      serviceTypes: new Set(),
+
+      // Información comercial
+      priceRanges: [],
+      averagePrice: 0,
+      priceInteractions: 0,
+
+      // Patrones de comunicación
+      communicationPattern: {
+        averageMessageLength: 0,
+        totalMessages: history.length,
+        responseTypes: new Set(),
+      },
+
+      // Indicadores de lealtad
+      loyaltyIndicators: {
+        repeatCustomer: history.length > 1,
+        totalInteractions: history.length,
+        timespan: null,
+        satisfactionLevel: 0,
+      },
+
+      // Metadatos de análisis
+      analysisMetadata: {
+        profileGenerated: new Date().toISOString(),
+        dataPoints: history.length,
+        confidenceScore: this.calculateProfileConfidence(history),
+      },
+    };
+
+    let totalSatisfaction = 0;
+    let satisfactionCount = 0;
+    let totalMessageLength = 0;
+
+    // Analizar cada interacción
+    history.forEach((item) => {
+      const metadata = item.metadata;
+
+      // Dispositivos
+      if (metadata.device_mentioned) {
+        profile.preferredDevices.add(metadata.device_mentioned);
+      }
+      if (metadata.device_brand) {
+        profile.deviceBrands.add(metadata.device_brand);
+      }
+
+      // Servicios
+      if (metadata.service_mentioned) {
+        profile.commonServices.add(metadata.service_mentioned);
+      }
+      if (metadata.service_type) {
+        profile.serviceTypes.add(metadata.service_type);
+      }
+
+      // Precios
+      if (metadata.price_quoted && !isNaN(metadata.price_quoted)) {
+        const price = Number(metadata.price_quoted);
+        profile.priceRanges.push(price);
+        profile.priceInteractions++;
+      }
+
+      // Comunicación
+      if (metadata.message_length) {
+        totalMessageLength += metadata.message_length;
+      }
+      if (metadata.response_type) {
+        profile.communicationPattern.responseTypes.add(metadata.response_type);
+      }
+
+      // Satisfacción
+      if (metadata.satisfaction_level) {
         totalSatisfaction += metadata.satisfaction_level;
         satisfactionCount++;
       }
@@ -406,7 +409,7 @@ class ClientHistorySearchEngine {
     // Calcular timespan
     if (history.length > 1) {
       const firstTime = new Date(
-        history[history.length - 1].metadata.timestamp
+        history[history.length - 1].metadata.timestamp,
       );
       const lastTime = new Date(history[0].metadata.timestamp);
       profile.loyaltyIndicators.timespan = lastTime - firstTime;
@@ -418,7 +421,7 @@ class ClientHistorySearchEngine {
     profile.commonServices = Array.from(profile.commonServices);
     profile.serviceTypes = Array.from(profile.serviceTypes);
     profile.communicationPattern.responseTypes = Array.from(
-      profile.communicationPattern.responseTypes
+      profile.communicationPattern.responseTypes,
     );
 
     return profile;
@@ -534,13 +537,13 @@ class ClientHistorySearchEngine {
           {
             limit: options.limit || 10,
             ...options,
-          }
+          },
         );
 
       // 3. Enriquecer con contexto del perfil del cliente
       const enrichedResults = this.enrichResultsWithClientContext(
         semanticResults,
-        clientHistory.clientProfile
+        clientHistory.clientProfile,
       );
 
       return {
@@ -559,7 +562,7 @@ class ClientHistorySearchEngine {
     } catch (error) {
       logger.error(
         `Error en búsqueda semántica para cliente ${clientId}:`,
-        error
+        error,
       );
       return {
         clientId,
@@ -602,7 +605,7 @@ class ClientHistorySearchEngine {
     return results.filter((result) => {
       const key = `${result.metadata.timestamp}_${result.text.substring(
         0,
-        50
+        50,
       )}`;
       if (seen.has(key)) {
         return false;
@@ -648,10 +651,10 @@ class ClientHistorySearchEngine {
       ...result,
       clientContext: {
         isPreferredDevice: clientProfile.preferredDevices.includes(
-          result.metadata?.device_mentioned
+          result.metadata?.device_mentioned,
         ),
         isCommonService: clientProfile.commonServices.includes(
-          result.metadata?.service_mentioned
+          result.metadata?.service_mentioned,
         ),
         profileRelevance: this.calculateProfileRelevance(result, clientProfile),
       },
@@ -799,5 +802,5 @@ class ClientHistorySearchEngine {
 }
 
 module.exports = {
-    ClientHistorySearchEngine
+  ClientHistorySearchEngine,
 };

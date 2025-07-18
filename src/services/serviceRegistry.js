@@ -1,5 +1,4 @@
-
-const logger = require('../utils/logger');
+const logger = require("../utils/logger");
 
 /**
  * @file serviceRegistry.js
@@ -17,8 +16,8 @@ const services = {};
  * @param {object} serviceInstance - The instance of the service. Must have a healthCheck method.
  */
 function registerService(name, serviceInstance) {
-    logger.info(`ServiceRegistry: Registrando el servicio '${name}'.`);
-    services[name] = serviceInstance;
+  logger.info(`ServiceRegistry: Registrando el servicio '${name}'.`);
+  services[name] = serviceInstance;
 }
 
 /**
@@ -29,27 +28,36 @@ function registerService(name, serviceInstance) {
  * @returns {Promise<boolean>} - True if the restart was initiated successfully.
  */
 async function restartService(serviceName) {
-    logger.info(`ServiceRegistry: Solicitud de reinicio para el servicio '${serviceName}'.`);
-    const service = services[serviceName];
+  logger.info(
+    `ServiceRegistry: Solicitud de reinicio para el servicio '${serviceName}'.`,
+  );
+  const service = services[serviceName];
 
-    if (service && typeof service.initialize === 'function') {
-        try {
-            // Simula un reinicio llamando de nuevo a su inicializador.
-            await service.initialize();
-            logger.info(`ServiceRegistry: El servicio '${serviceName}' ha sido reinicializado.`);
-            return true;
-        } catch (error) {
-            logger.error(`ServiceRegistry: Fallo al reinicializar el servicio '${serviceName}'.`, error);
-            return false;
-        }
-    } else {
-        logger.warn(`ServiceRegistry: No se puede reiniciar el servicio '${serviceName}'. No es reiniciable o no está registrado.`);
-        return false;
+  if (service && typeof service.initialize === "function") {
+    try {
+      // Simula un reinicio llamando de nuevo a su inicializador.
+      await service.initialize();
+      logger.info(
+        `ServiceRegistry: El servicio '${serviceName}' ha sido reinicializado.`,
+      );
+      return true;
+    } catch (error) {
+      logger.error(
+        `ServiceRegistry: Fallo al reinicializar el servicio '${serviceName}'.`,
+        error,
+      );
+      return false;
     }
+  } else {
+    logger.warn(
+      `ServiceRegistry: No se puede reiniciar el servicio '${serviceName}'. No es reiniciable o no está registrado.`,
+    );
+    return false;
+  }
 }
 
 module.exports = {
-    services,
-    registerService,
-    restartService,
+  services,
+  registerService,
+  restartService,
 };

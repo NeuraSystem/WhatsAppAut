@@ -26,7 +26,7 @@ const performanceMonitor = {
         const duration = performance.now() - start;
         logger.debug(
           `⏱️ ConversationMemory: ${operation} took ${duration.toFixed(2)}ms`,
-          context
+          context,
         );
         return duration;
       },
@@ -35,16 +35,16 @@ const performanceMonitor = {
 };
 
 // Parse CHROMA_URL to extract host, port and protocol
-const { URL } = require('url');
-const CHROMA_URL = process.env.CHROMA_URL || 'http://localhost:8000';
+const { URL } = require("url");
+const CHROMA_URL = process.env.CHROMA_URL || "http://localhost:8000";
 const url = new URL(CHROMA_URL);
-const CONVERSATIONS_COLLECTION_NAME = 'memoria_conversacional';
+const CONVERSATIONS_COLLECTION_NAME = "memoria_conversacional";
 
 // Initialize ChromaDB client with the new format
 const chromaClient = new ChromaClient({
-    host: url.hostname,
-    port: url.port || (url.protocol === 'https:' ? 443 : 80),
-    ssl: url.protocol === 'https:'
+  host: url.hostname,
+  port: url.port || (url.protocol === "https:" ? 443 : 80),
+  ssl: url.protocol === "https:",
 });
 
 /**
@@ -57,7 +57,7 @@ class EnhancedLangChainEmbeddingAdapter {
     this.defaultTaskType = defaultTaskType; // 'document', 'query', 'classification'
 
     logger.info(
-      `Enhanced Adapter inicializado - Tipo de tarea por defecto: ${defaultTaskType}`
+      `Enhanced Adapter inicializado - Tipo de tarea por defecto: ${defaultTaskType}`,
     );
   }
 
@@ -86,7 +86,7 @@ class EnhancedLangChainEmbeddingAdapter {
     } catch (error) {
       logger.error(
         "Error en EnhancedLangChainEmbeddingAdapter (ConversationMemory):",
-        error
+        error,
       );
       throw error;
     }
@@ -126,11 +126,11 @@ class EnhancedLangChainEmbeddingAdapter {
 // Crear el enhanced adapter para ChromaDB con prefijos de tarea
 const embeddingAdapter = new EnhancedLangChainEmbeddingAdapter(
   embeddingEngine,
-  "document"
+  "document",
 );
 const queryAdapter = new EnhancedLangChainEmbeddingAdapter(
   embeddingEngine,
-  "query"
+  "query",
 );
 
 /**
@@ -181,11 +181,11 @@ class ConversationMemory {
         enableProfileAnalysis: true,
         enableSearchCache: true,
       },
-      this
+      this,
     ); // <-- Se inyecta 'this' para romper la dependencia circular
 
     logger.info(
-      "💾 ConversationMemory inicializado con SemanticChunker + DeterministicSearchEngine + DynamicLimits + MarkdownEnricher + SimpleDeduplication + MetadataEnhancer + ClientHistorySearch"
+      "💾 ConversationMemory inicializado con SemanticChunker + DeterministicSearchEngine + DynamicLimits + MarkdownEnricher + SimpleDeduplication + MetadataEnhancer + ClientHistorySearch",
     );
   }
 
@@ -204,7 +204,7 @@ class ConversationMemory {
       });
 
       logger.info(
-        `Sistema de memoria conversacional inicializado: ${CONVERSATIONS_COLLECTION_NAME}`
+        `Sistema de memoria conversacional inicializado: ${CONVERSATIONS_COLLECTION_NAME}`,
       );
       return true;
     } catch (error) {
@@ -229,7 +229,7 @@ class ConversationMemory {
     userMessage,
     botResponse,
     intent,
-    extractedData = {}
+    extractedData = {},
   ) {
     const timer = performanceMonitor.startTimer("storeConversationChunk", {
       clientId,
@@ -245,7 +245,7 @@ class ConversationMemory {
         userMessage,
         botResponse,
         intent,
-        extractedData
+        extractedData,
       );
 
       // 2. VERIFICAR DEDUPLICACIÓN Y ALMACENAR CADA CHUNK EN CHROMADB
@@ -269,7 +269,7 @@ class ConversationMemory {
               botResponse,
               device: extractedData.device,
               service: extractedData.service,
-            }
+            },
           );
 
           // Actualizar chunk con metadatos enriquecidos
@@ -279,12 +279,12 @@ class ConversationMemory {
           // 2a. VERIFICAR DUPLICACIÓN CON CHUNKS EXISTENTES RECIENTES
           const recentChunks = await this.getRecentChunksForDeduplication(
             clientId,
-            50
+            50,
           );
           const deduplicationResult =
             await this.deduplicationEngine.checkForDuplicates(
               chunk,
-              recentChunks
+              recentChunks,
             );
 
           // 2b. APLICAR DECISIÓN DE DEDUPLICACIÓN
@@ -293,7 +293,7 @@ class ConversationMemory {
               logger.debug(
                 `🔄 Chunk duplicado omitido: ${
                   chunk.id
-                } (similitud: ${deduplicationResult.similarity?.toFixed(3)})`
+                } (similitud: ${deduplicationResult.similarity?.toFixed(3)})`,
               );
               deduplicationStats.duplicatesSkipped++;
               continue; // No almacenar
@@ -336,7 +336,7 @@ class ConversationMemory {
           userMessage,
           botResponse,
           intent,
-          extractedData
+          extractedData,
         );
       }
 
@@ -347,7 +347,7 @@ class ConversationMemory {
       });
 
       logger.info(
-        `💾 Chunks semánticos procesados: ${clientId} -> ${intent} (${storedChunks.length} almacenados, ${deduplicationStats.duplicatesSkipped} duplicados omitidos, ${deduplicationStats.variantsStored} variantes)`
+        `💾 Chunks semánticos procesados: ${clientId} -> ${intent} (${storedChunks.length} almacenados, ${deduplicationStats.duplicatesSkipped} duplicados omitidos, ${deduplicationStats.variantsStored} variantes)`,
       );
       timer.end();
       return true;
@@ -360,7 +360,7 @@ class ConversationMemory {
         userMessage,
         botResponse,
         intent,
-        extractedData
+        extractedData,
       );
     }
   }
@@ -388,11 +388,11 @@ class ConversationMemory {
       const limitOptimization = this.limitOptimizer.optimizeLimits(
         query,
         "CONVERSATION_MEMORY",
-        { ...filters, client_id: clientId }
+        { ...filters, client_id: clientId },
       );
 
       logger.debug(
-        `🎯 Límites optimizados: base=${limitOptimization.baseLimit}, max=${limitOptimization.maxLimit}, contexto=${limitOptimization.context}`
+        `🎯 Límites optimizados: base=${limitOptimization.baseLimit}, max=${limitOptimization.maxLimit}, contexto=${limitOptimization.context}`,
       );
 
       // 2. CONSTRUIR FILTROS DE METADATA
@@ -408,7 +408,7 @@ class ConversationMemory {
             ...whereFilter,
             limit: limitOptimization.baseLimit, // Usar límite optimizado
           },
-          limitOptimization.context
+          limitOptimization.context,
         );
 
       if (!stabilizedResults.documents || !stabilizedResults.documents[0]) {
@@ -420,7 +420,7 @@ class ConversationMemory {
       const enrichedResults = this.markdownEnricher.enrichSearchResults(
         stabilizedResults,
         query,
-        limitOptimization.context
+        limitOptimization.context,
       );
 
       // 5. FORMATEAR RESULTADOS CON TODA LA INFORMACIÓN
@@ -457,7 +457,7 @@ class ConversationMemory {
           memories.length
         } recuerdos (límites: ${limitOptimization.baseLimit}, consenso: ${
           enrichedResults.consensusQuality?.toFixed(3) || "N/A"
-        })`
+        })`,
       );
 
       timer.end();
@@ -472,7 +472,7 @@ class ConversationMemory {
       return await this.searchConversationMemoryFallback(
         query,
         clientId,
-        filters
+        filters,
       );
     }
   }
@@ -515,7 +515,7 @@ class ConversationMemory {
       }
 
       logger.info(
-        `🧠 Fallback exitoso: ${memories.length} recuerdos para: "${query}"`
+        `🧠 Fallback exitoso: ${memories.length} recuerdos para: "${query}"`,
       );
       return memories;
     } catch (fallbackError) {
@@ -541,14 +541,14 @@ class ConversationMemory {
       const limitOptimization = this.limitOptimizer.optimizeLimits(
         historyQuery,
         "CONVERSATION_MEMORY",
-        { client_id: clientId, requestedLimit }
+        { client_id: clientId, requestedLimit },
       );
 
       // Usar el mayor entre el límite solicitado y el optimizado
       const finalLimit = Math.max(requestedLimit, limitOptimization.baseLimit);
 
       logger.debug(
-        `👤 Límites optimizados para cliente ${clientId}: solicitado=${requestedLimit}, optimizado=${finalLimit}`
+        `👤 Límites optimizados para cliente ${clientId}: solicitado=${requestedLimit}, optimizado=${finalLimit}`,
       );
 
       // 2. BÚSQUEDA DETERMINÍSTICA CON LÍMITES OPTIMIZADOS
@@ -560,7 +560,7 @@ class ConversationMemory {
             limit: finalLimit,
             client_id: clientId,
           },
-          "CONVERSATION_MEMORY"
+          "CONVERSATION_MEMORY",
         );
 
       if (!stabilizedResults.documents || !stabilizedResults.documents[0]) {
@@ -572,7 +572,7 @@ class ConversationMemory {
       const enrichedResults = this.markdownEnricher.enrichSearchResults(
         stabilizedResults,
         historyQuery,
-        "client_history"
+        "client_history",
       );
 
       // 4. FORMATEAR Y ORDENAR RESULTADOS
@@ -592,7 +592,7 @@ class ConversationMemory {
       // Ordenar por timestamp (más recientes primero)
       memories.sort(
         (a, b) =>
-          new Date(b.metadata.timestamp) - new Date(a.metadata.timestamp)
+          new Date(b.metadata.timestamp) - new Date(a.metadata.timestamp),
       );
 
       // 5. LIMITAR AL NÚMERO SOLICITADO DESPUÉS DE OPTIMIZACIÓN
@@ -603,7 +603,7 @@ class ConversationMemory {
           memories.length
         } recuerdos (consenso: ${
           enrichedResults.consensusQuality?.toFixed(3) || "N/A"
-        })`
+        })`,
       );
 
       return {
@@ -633,7 +633,7 @@ class ConversationMemory {
 
       // MEJORA: Usar prefijo de consulta específico para búsqueda de historial
       const queryEmbedding = await queryAdapter.generateQuery(
-        "conversación historial interacciones cliente"
+        "conversación historial interacciones cliente",
       );
 
       const results = await this.collection.query({
@@ -659,17 +659,17 @@ class ConversationMemory {
       // Ordenar por timestamp
       memories.sort(
         (a, b) =>
-          new Date(b.metadata.timestamp) - new Date(a.metadata.timestamp)
+          new Date(b.metadata.timestamp) - new Date(a.metadata.timestamp),
       );
 
       logger.info(
-        `👤 Historial fallback de ${clientId}: ${memories.length} recuerdos`
+        `👤 Historial fallback de ${clientId}: ${memories.length} recuerdos`,
       );
       return memories;
     } catch (fallbackError) {
       logger.error(
         `Error en búsqueda fallback para cliente ${clientId}:`,
-        fallbackError
+        fallbackError,
       );
       return [];
     }
@@ -684,14 +684,14 @@ class ConversationMemory {
     userMessage,
     botResponse,
     intent,
-    extractedData = {}
+    extractedData = {},
   ) {
     try {
       const timestamp = new Date().toISOString();
       const chunkText = this.createChunkText(
         clientId,
         userMessage,
-        botResponse
+        botResponse,
       );
 
       const rawMetadata = {
@@ -720,7 +720,7 @@ class ConversationMemory {
           botResponse,
           device: extractedData.device,
           service: extractedData.service,
-        }
+        },
       );
 
       const chunkId = `conv_${clientId}_${Date.now()}`;
@@ -810,7 +810,7 @@ class ConversationMemory {
     userMessage,
     botResponse,
     intent,
-    metadata
+    metadata,
   ) {
     try {
       await pool.query(
@@ -833,7 +833,7 @@ class ConversationMemory {
           "neutral", // Por ahora
           metadata.hour_of_day,
           metadata.satisfaction_level,
-        ]
+        ],
       );
     } catch (error) {
       logger.warn("Error almacenando backup en PostgreSQL:", error.message);
@@ -925,10 +925,10 @@ class ConversationMemory {
           overallHealth > 0.8
             ? "excellent"
             : overallHealth > 0.6
-            ? "good"
-            : overallHealth > 0.4
-            ? "fair"
-            : "poor",
+              ? "good"
+              : overallHealth > 0.4
+                ? "fair"
+                : "poor",
       };
     } catch (error) {
       logger.warn("Error calculando salud del sistema:", error.message);
@@ -964,13 +964,13 @@ class ConversationMemory {
       }
 
       logger.debug(
-        `🔍 Chunks recientes para deduplicación: ${recentChunks.length} encontrados para cliente ${clientId}`
+        `🔍 Chunks recientes para deduplicación: ${recentChunks.length} encontrados para cliente ${clientId}`,
       );
       return recentChunks;
     } catch (error) {
       logger.warn(
         `⚠️ Error obteniendo chunks recientes para deduplicación:`,
-        error.message
+        error.message,
       );
       return []; // Retornar array vacío en caso de error
     }
@@ -984,16 +984,16 @@ class ConversationMemory {
     try {
       return await this.clientHistorySearch.searchClientHistory(
         clientPhone,
-        options
+        options,
       );
     } catch (error) {
       logger.error(
         `Error en búsqueda de historial de cliente ${clientPhone}:`,
-        error
+        error,
       );
       return this.clientHistorySearch.getEmptyClientHistory(
         clientPhone,
-        "search_error"
+        "search_error",
       );
     }
   }
@@ -1007,12 +1007,12 @@ class ConversationMemory {
       return await this.clientHistorySearch.searchInClientHistory(
         clientPhone,
         query,
-        options
+        options,
       );
     } catch (error) {
       logger.error(
         `Error en búsqueda semántica para cliente ${clientPhone}:`,
-        error
+        error,
       );
       return {
         clientId: clientPhone,
@@ -1058,9 +1058,8 @@ class ConversationMemory {
    */
   async findSimilarClients(referenceClientPhone, options = {}) {
     try {
-      const referenceProfile = await this.getClientProfile(
-        referenceClientPhone
-      );
+      const referenceProfile =
+        await this.getClientProfile(referenceClientPhone);
 
       if (!referenceProfile.profile) {
         return {
@@ -1085,7 +1084,7 @@ class ConversationMemory {
     } catch (error) {
       logger.error(
         `Error buscando clientes similares a ${referenceClientPhone}:`,
-        error
+        error,
       );
       return {
         referenceClient: referenceClientPhone,
@@ -1211,7 +1210,7 @@ class ConversationMemory {
     } catch (error) {
       logger.error(
         "Error calculando salud arquitectónica de conversationMemory:",
-        error
+        error,
       );
       return {
         service: "conversationMemory",

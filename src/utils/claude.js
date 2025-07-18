@@ -1,13 +1,13 @@
 // src/utils/claude.js
 
-require('dotenv').config();
-const Anthropic = require('@anthropic-ai/sdk');
-const config = require('./config');
-const logger = require('./logger');
-const { getConocimientos } = require('../database/pg');
+require("dotenv").config();
+const Anthropic = require("@anthropic-ai/sdk");
+const config = require("./config");
+const logger = require("./logger");
+const { getConocimientos } = require("../database/pg");
 
 const anthropic = new Anthropic({
-    apiKey: config.api.anthropic,
+  apiKey: config.api.anthropic,
 });
 
 const MODEL_NAME = "claude-3-haiku-20240307";
@@ -19,7 +19,7 @@ const MODEL_NAME = "claude-3-haiku-20240307";
  * @returns {string} El system prompt.
  */
 function getSystemPrompt(conocimientos, contexto = {}) {
-    let prompt = `
+  let prompt = `
         Eres "Salva", un asistente virtual con personalidad empática y natural para "Salva Cell". Tu objetivo es crear conversaciones fluidas que generen conexión emocional con los clientes.
 
         **Información Clave sobre Salva Cell:**
@@ -32,14 +32,14 @@ function getSystemPrompt(conocimientos, contexto = {}) {
         - **Google Maps:** https://g.co/kgs/FpfFnJy
     `;
 
-    if (conocimientos && conocimientos.length > 0) {
-        prompt += `
-        **Conocimiento Adicional Basado en Casos Reales:**
-        ${conocimientos.map(c => `- ${c}`).join('\n')}
-        `;
-    }
-
+  if (conocimientos && conocimientos.length > 0) {
     prompt += `
+        **Conocimiento Adicional Basado en Casos Reales:**
+        ${conocimientos.map((c) => `- ${c}`).join("\n")}
+        `;
+  }
+
+  prompt += `
         **Tu Personalidad y Estilo:**
         - Eres empático, confiable y generas curiosidad
         - Usas emojis naturalmente (😊, 😉, 🛠️, etc.)
@@ -49,16 +49,16 @@ function getSystemPrompt(conocimientos, contexto = {}) {
         - Priorizas responder la consulta del cliente pero integras otros elementos naturalmente
 
         **Contexto Conversacional Actual:**
-        - Cliente es nuevo: ${contexto.esNuevo ? 'Sí' : 'No'}
-        - Tiene nombre registrado: ${contexto.tieneNombre ? 'Sí' : 'No'}
-        - Nombre del cliente: ${contexto.nombreCliente || 'Sin nombre'}
-        - Ya se presentó como IA: ${contexto.yaSePresentoIA ? 'Sí' : 'No'}
+        - Cliente es nuevo: ${contexto.esNuevo ? "Sí" : "No"}
+        - Tiene nombre registrado: ${contexto.tieneNombre ? "Sí" : "No"}
+        - Nombre del cliente: ${contexto.nombreCliente || "Sin nombre"}
+        - Ya se presentó como IA: ${contexto.yaSePresentoIA ? "Sí" : "No"}
         - Total de consultas: ${contexto.totalConsultas || 0}
-        - Cliente recurrente: ${contexto.esClienteRecurrente ? 'Sí' : 'No'}
-        - Tono preferido: ${contexto.tonoPreferido || 'neutral'}
-        - Franja horaria: ${contexto.franjaTiempo || 'día'} (${contexto.horaActual || new Date().getHours()}h)
+        - Cliente recurrente: ${contexto.esClienteRecurrente ? "Sí" : "No"}
+        - Tono preferido: ${contexto.tonoPreferido || "neutral"}
+        - Franja horaria: ${contexto.franjaTiempo || "día"} (${contexto.horaActual || new Date().getHours()}h)
         - Satisfacción promedio: ${contexto.satisfaccionPromedio || 5}/10
-        - Productos consultados antes: ${contexto.productosAnterior ? contexto.productosAnterior.slice(0, 3).join(', ') : 'Ninguno'}
+        - Productos consultados antes: ${contexto.productosAnterior ? contexto.productosAnterior.slice(0, 3).join(", ") : "Ninguno"}
 
         **Instrucciones de Personalización:**
         1. **ADAPTA EL TONO**: 
@@ -172,7 +172,7 @@ function getSystemPrompt(conocimientos, contexto = {}) {
 
         **REGLA FINAL Y OBLIGATORIA: Tu respuesta DEBE ser únicamente un objeto JSON válido y nada más. No incluyas texto, explicaciones, ni markdown antes o después del JSON. Tu respuesta completa debe empezar con '{' y terminar con '}'.**
     `;
-    return prompt;
+  return prompt;
 }
 
 /**
@@ -182,38 +182,42 @@ function getSystemPrompt(conocimientos, contexto = {}) {
  * @returns {Promise<Object|null>}
  */
 async function interpretQuery(userQuery, contexto = {}) {
-    if (!config.api.anthropic) {
-        logger.warn("ANTHROPIC_API_KEY no configurada. Saltando IA.");
-        return { intencion_principal: 'otro', respuesta_completa: 'Lo siento, no puedo procesar tu consulta en este momento.' };
-    }
+  if (!config.api.anthropic) {
+    logger.warn("ANTHROPIC_API_KEY no configurada. Saltando IA.");
+    return {
+      intencion_principal: "otro",
+      respuesta_completa:
+        "Lo siento, no puedo procesar tu consulta en este momento.",
+    };
+  }
 
-    // Cargar conocimientos desde la BD
-    const conocimientos = await getConocimientos();
-    const systemPrompt = getSystemPrompt(conocimientos, contexto);
+  // Cargar conocimientos desde la BD
+  const conocimientos = await getConocimientos();
+  const systemPrompt = getSystemPrompt(conocimientos, contexto);
 
-    try {
-        const msg = await anthropic.messages.create({
-            model: MODEL_NAME,
-            max_tokens: 1500,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: userQuery }],
-            temperature: 0.3,
-        });
+  try {
+    const msg = await anthropic.messages.create({
+      model: MODEL_NAME,
+      max_tokens: 1500,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userQuery }],
+      temperature: 0.3,
+    });
 
-        const responseText = msg.content[0].text;
-        const cleanJson = responseText.replace(/```json\n?|\n?```/g, '');
-        return JSON.parse(cleanJson);
-
-    } catch (error) {
-        logger.error("Error al contactar la API de Anthropic:", error);
-        return { 
-            intencion_principal: 'otro', 
-            respuesta_completa: 'Hmm, no tengo la información exacta sobre esa consulta. Para darte la mejor atención, voy a pasar tu consulta a uno de nuestros expertos. En breve se pondrá en contacto contigo. 😊',
-            necesita_busqueda_bd: false
-        };
-    }
+    const responseText = msg.content[0].text;
+    const cleanJson = responseText.replace(/```json\n?|\n?```/g, "");
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    logger.error("Error al contactar la API de Anthropic:", error);
+    return {
+      intencion_principal: "otro",
+      respuesta_completa:
+        "Hmm, no tengo la información exacta sobre esa consulta. Para darte la mejor atención, voy a pasar tu consulta a uno de nuestros expertos. En breve se pondrá en contacto contigo. 😊",
+      necesita_busqueda_bd: false,
+    };
+  }
 }
 
 module.exports = {
-    interpretQuery,
+  interpretQuery,
 };
