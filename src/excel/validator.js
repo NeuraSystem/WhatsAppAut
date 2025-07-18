@@ -1,1 +1,0 @@
-// Validador de estructura Excel

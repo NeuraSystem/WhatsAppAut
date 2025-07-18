@@ -1,6 +1,6 @@
 // src/utils/chatState.js
 
-const logger = require("./logger");
+const logger = require('./logger');
 
 // Almacena los chats que están actualmente en pausa.
 // La clave es el ID del chat (ej: '5491123456789@c.us')
@@ -13,24 +13,24 @@ const pausedChats = new Map();
  * @param {number} durationInMinutes - La duración de la pausa en minutos.
  */
 function pauseChat(chatId, durationInMinutes) {
-  // Si ya hay una pausa para este chat, la cancelamos antes de crear una nueva.
-  if (pausedChats.has(chatId)) {
-    clearTimeout(pausedChats.get(chatId));
-  }
+    // Si ya hay una pausa para este chat, la cancelamos antes de crear una nueva.
+    if (pausedChats.has(chatId)) {
+        clearTimeout(pausedChats.get(chatId));
+    }
 
-  const durationInMs = durationInMinutes * 60 * 1000;
+    const durationInMs = durationInMinutes * 60 * 1000;
 
-  const timer = setTimeout(() => {
-    resumeChat(chatId);
+    const timer = setTimeout(() => {
+        resumeChat(chatId);
+        logger.info(
+            `Pausa expirada. El bot se ha reanudado automáticamente para el chat ${chatId}.`
+        );
+    }, durationInMs);
+
+    pausedChats.set(chatId, timer);
     logger.info(
-      `Pausa expirada. El bot se ha reanudado automáticamente para el chat ${chatId}.`,
+        `Bot pausado para el chat ${chatId} durante ${durationInMinutes} minutos.`
     );
-  }, durationInMs);
-
-  pausedChats.set(chatId, timer);
-  logger.info(
-    `Bot pausado para el chat ${chatId} durante ${durationInMinutes} minutos.`,
-  );
 }
 
 /**
@@ -38,11 +38,11 @@ function pauseChat(chatId, durationInMinutes) {
  * @param {string} chatId - El ID del chat a reanudar.
  */
 function resumeChat(chatId) {
-  if (pausedChats.has(chatId)) {
-    clearTimeout(pausedChats.get(chatId));
-    pausedChats.delete(chatId);
-    logger.info(`Bot reanudado manualmente para el chat ${chatId}.`);
-  }
+    if (pausedChats.has(chatId)) {
+        clearTimeout(pausedChats.get(chatId));
+        pausedChats.delete(chatId);
+        logger.info(`Bot reanudado manualmente para el chat ${chatId}.`);
+    }
 }
 
 /**
@@ -51,11 +51,11 @@ function resumeChat(chatId) {
  * @returns {boolean} - True si el chat está pausado, false en caso contrario.
  */
 function isChatPaused(chatId) {
-  return pausedChats.has(chatId);
+    return pausedChats.has(chatId);
 }
 
 module.exports = {
-  pauseChat,
-  resumeChat,
-  isChatPaused,
+    pauseChat,
+    resumeChat,
+    isChatPaused
 };

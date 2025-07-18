@@ -69,6 +69,7 @@
     "markdown-it": "^14.1.0",
     "natural": "^8.1.0",
     "node-cron": "^4.2.1",
+    "node-fetch": "^3.3.2",
     "node-pg-migrate": "^8.0.3",
     "opossum": "^9.0.0",
     "performance-now": "^2.1.0",
