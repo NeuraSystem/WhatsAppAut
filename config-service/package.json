@@ -1,0 +1,11 @@
+{
+  "name": "config-service",
+  "version": "1.0.0",
+  "description": "Centralized configuration management",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+  }
+}

@@ -1,0 +1,13 @@
+# Microservicio base para KnowledgeCoherenceLayer
+# Dockerfile para microservicio Node.js (KnowledgeCoherenceLayer)
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY ../../src/services/knowledge/KnowledgeCoherenceLayer.js ./KnowledgeCoherenceLayer.js
+COPY ../../package.json ./
+
+RUN npm install --production
+
+CMD ["node", "KnowledgeCoherenceLayer.js"]

@@ -1,0 +1,13 @@
+# Microservicio base para contenerización
+# Dockerfile para microservicio Node.js (ejemplo: EmbeddingEngine)
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY ../../src/services/embeddingEngine.js ./embeddingEngine.js
+COPY ../../package.json ./
+
+RUN npm install --production
+
+CMD ["node", "embeddingEngine.js"]

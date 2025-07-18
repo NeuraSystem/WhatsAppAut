@@ -1,0 +1,11 @@
+{
+  "name": "knowledge-service",
+  "version": "1.0.0",
+  "description": "Manages knowledge base",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+  }
+}
